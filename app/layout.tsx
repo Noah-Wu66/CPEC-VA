@@ -24,7 +24,7 @@ const scrollbarScript = `
 
 const themeInitScript = `
   (() => {
-    const savedThemeMode = localStorage.getItem('cpec-va-theme-mode');
+    const savedThemeMode = localStorage.getItem('va-theme-mode');
     const themeMode = ['light', 'dark', 'system'].includes(savedThemeMode) ? savedThemeMode : 'system';
     const resolvedTheme = themeMode === 'system'
       ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
@@ -45,8 +45,8 @@ const bodyFont = Noto_Sans_SC({
 });
 
 export const metadata: Metadata = {
-  title: "CPEC 视频速览",
-  description: "输入公开视频地址，生成解读、标签和可检索归档"
+  title: "Video Analyzer",
+  description: "粘贴视频链接，AI 自动生成解读与标签"
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

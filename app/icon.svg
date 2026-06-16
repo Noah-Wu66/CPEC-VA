@@ -1,21 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="CPEC 视频速览图标">
-  <defs>
-    <linearGradient id="brandBg" x1="76" y1="76" x2="436" y2="436" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#1d4f73" />
-      <stop offset="0.52" stop-color="#172033" />
-      <stop offset="1" stop-color="#d94a38" />
-    </linearGradient>
-    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#0b1120" flood-opacity="0.34" />
-    </filter>
-  </defs>
-
-  <rect x="32" y="32" width="448" height="448" rx="108" fill="url(#brandBg)" />
-  <rect x="58" y="58" width="396" height="396" rx="90" fill="none" stroke="#fffaf0" stroke-opacity="0.16" stroke-width="10" />
-  <circle cx="370" cy="116" r="38" fill="#e6b766" />
-  <path d="M334 112L424 166L334 220Z" fill="#e6b766" filter="url(#softShadow)" />
-  <path d="M330 128C394 172 430 240 424 306C420 348 400 388 366 424" fill="none" stroke="#4cc39f" stroke-width="30" stroke-linecap="round" />
-  <circle cx="366" cy="382" r="32" fill="#4cc39f" />
-  <path d="M98 384H196" fill="none" stroke="#fffaf0" stroke-width="30" stroke-linecap="round" stroke-opacity="0.72" />
-  <text x="230" y="338" fill="#fffaf0" font-family="'Songti SC','STSong','Noto Serif SC',serif" font-size="230" font-weight="800" text-anchor="middle">智</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Video Analyzer">
+  <rect width="512" height="512" rx="112" fill="#0a0a0a" />
+  <g fill="#fafafa">
+    <rect x="120" y="216" width="40" height="80" rx="10" />
+    <rect x="180" y="176" width="40" height="160" rx="10" />
+    <rect x="240" y="136" width="40" height="240" rx="10" />
+  </g>
+  <path d="M330 176L406 256L330 336Z" fill="#fafafa" />
 </svg>

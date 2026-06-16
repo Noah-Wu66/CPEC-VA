@@ -1,84 +1,56 @@
 "use client";
 
-import type { Route } from "next";
-import { usePathname } from "next/navigation";
+import { useAppTheme, type ThemeMode } from "@/components/layout/app-theme-provider";
 import { LogoutButton } from "@/components/layout/logout-button";
+import { BrandMark } from "@/components/brand/brand-logo";
+import { APP_NAME } from "@/lib/constants";
 import { formatRoleLabel } from "@/lib/labels";
-import { Menu } from "lucide-react";
-
-const BREADCRUMB_MAP: Record<string, string> = {
-  "/video-brief": "视频速览",
-};
-
-type Breadcrumb = {
-  label: string;
-  href: Route;
-};
-
-function buildBreadcrumbs(pathname: string) {
-  const segments = pathname.split("/").filter(Boolean);
-  const crumbs: Breadcrumb[] = [];
-
-  let currentPath = "";
-  for (const seg of segments) {
-    currentPath += `/${seg}`;
-    const label = BREADCRUMB_MAP[currentPath];
-    if (label) {
-      crumbs.push({ label, href: currentPath as Route });
-    }
-  }
-
-  return crumbs.length > 0 ? crumbs : [{ label: "视频速览", href: "/video-brief" as Route }];
-}
+import type { Role } from "@/types/domain";
+import { Moon, Sun, Monitor } from "lucide-react";
 
 interface TopbarProps {
   email: string;
-  role: string;
-  onMenuClick?: () => void;
+  role: Role;
 }
 
-export function Topbar({ email, role, onMenuClick }: TopbarProps) {
-  const pathname = usePathname();
-  const initials = email.slice(0, 2).toUpperCase();
-  const breadcrumbs = buildBreadcrumbs(pathname);
-  const pageTitle = breadcrumbs[breadcrumbs.length - 1]?.label || "工作台";
+export function Topbar({ email, role }: TopbarProps) {
+  const { themeMode, setThemeMode } = useAppTheme();
+
+  function cycleTheme() {
+    const modes: ThemeMode[] = ["light", "dark", "system"];
+    const currentIndex = modes.indexOf(themeMode);
+    const nextMode = modes[(currentIndex + 1) % modes.length];
+    setThemeMode(nextMode);
+  }
+
+  const themeIcon = themeMode === "light"
+    ? <Sun className="h-4 w-4" />
+    : themeMode === "dark"
+      ? <Moon className="h-4 w-4" />
+      : <Monitor className="h-4 w-4" />;
+  const themeTitle = themeMode === "light" ? "浅色模式（点击切换）" : themeMode === "dark" ? "深色模式（点击切换）" : "跟随系统（点击切换）";
 
   return (
-    <header className="app-topbar md:min-h-[72px] md:px-6">
-      <div className="flex min-w-0 items-center gap-3">
-        <button
-          onClick={onMenuClick}
-          className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] border border-[var(--oa-control-border)] bg-[var(--oa-control-bg)] text-[var(--oa-ink)] transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_20px_rgba(23,32,51,0.08)] md:hidden"
-          aria-label="打开菜单"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
-
-        <div className="min-w-0">
-          <h1 className="app-topbar-title truncate md:text-[21px]">
-            {pageTitle}
-          </h1>
-          <p className="mt-1 hidden truncate text-xs text-[var(--oa-muted)] sm:block">
-            CPEC 视频速览 · 解读、标签与归档
-          </p>
-        </div>
+    <header className="app-topbar">
+      <div className="app-topbar-brand">
+        <BrandMark />
+        <span className="app-topbar-name">{APP_NAME}</span>
       </div>
 
-      <div className="flex items-center gap-2 shrink-0">
-        <div className="hidden items-center gap-2.5 rounded-[var(--radius-md)] border border-[var(--oa-card-border)] bg-[var(--oa-paper-soft)] p-1 pr-3.5 shadow-sm md:flex">
-          <div className="app-topbar-tag flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--radius-sm)] text-[10px] font-bold">
-            {initials}
-          </div>
-          <div className="flex flex-col">
-            <span className="app-topbar-name text-xs font-semibold leading-tight">{email}</span>
-            <span className="text-[10px] font-bold leading-tight text-[var(--oa-muted)]">
-              {formatRoleLabel(role)}
-            </span>
-          </div>
-        </div>
+      <div className="app-topbar-actions">
+        <button
+          type="button"
+          className="app-theme-toggle"
+          aria-label={themeTitle}
+          title={themeTitle}
+          onClick={cycleTheme}
+        >
+          {themeIcon}
+        </button>
 
-        <div className="app-topbar-tag flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--radius-sm)] text-[10px] font-bold md:hidden">
-          {initials}
+        <div className="app-topbar-user">
+          <span className="app-topbar-user-email" title={email}>{email}</span>
+          <span className="app-topbar-user-role">{formatRoleLabel(role)}</span>
         </div>
 
         <LogoutButton />

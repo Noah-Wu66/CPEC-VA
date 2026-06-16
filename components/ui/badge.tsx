@@ -4,21 +4,21 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
     variants: {
       variant: {
         default:
-          "border-[var(--oa-red-soft-border)] bg-[var(--oa-red-soft-bg)] text-[var(--oa-red)]",
+          "border-[var(--va-accent-border)] bg-[var(--va-accent-soft)] text-[var(--va-accent)]",
         secondary:
-          "border-[var(--oa-card-border)] bg-[var(--oa-paper-soft)] text-[var(--oa-ink-2)]",
+          "border-[var(--va-border)] bg-[var(--va-hover)] text-[var(--va-fg-2)]",
         destructive:
-          "border-transparent [background:var(--oa-danger-gradient)] text-destructive-foreground",
-        outline: "border-[var(--oa-card-border)] bg-[var(--oa-card-bg)] text-[var(--oa-muted)]",
+          "border-[var(--va-danger-border)] bg-[var(--va-danger-soft)] text-[var(--va-danger)]",
+        outline: "border-[var(--va-border)] bg-transparent text-[var(--va-muted)]",
         success:
-          "border-[rgba(31,138,112,0.22)] bg-[rgba(31,138,112,0.08)] text-[var(--oa-green)]",
+          "border-[var(--va-success-border)] bg-[var(--va-success-soft)] text-[var(--va-success)]",
         warning:
-          "border-[rgba(183,121,31,0.24)] bg-[rgba(183,121,31,0.1)] text-[var(--oa-gold)]",
+          "border-[var(--warning-border)] bg-[var(--warning-light)] text-hsl(var(--warning))",
       },
     },
     defaultVariants: {

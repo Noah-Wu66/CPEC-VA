@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
-const THEME_STORAGE_KEY = "cpec-va-theme-mode";
+const THEME_STORAGE_KEY = "va-theme-mode";
 const THEME_MODES = ["light", "dark", "system"] as const;
 
 export type ThemeMode = (typeof THEME_MODES)[number];

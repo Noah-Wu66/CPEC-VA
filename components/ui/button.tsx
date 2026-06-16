@@ -4,22 +4,22 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-[var(--radius-md)] text-sm font-bold ring-offset-background transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:translate-y-px enabled:hover:-translate-y-0.5",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-[var(--radius-md)] text-sm font-semibold ring-offset-background transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:translate-y-px",
   {
     variants: {
       variant: {
-        default: "border border-transparent [background:var(--oa-primary-gradient)] text-primary-foreground shadow-[0_10px_24px_rgba(29,79,115,0.18)] hover:shadow-[0_10px_20px_rgba(23,32,51,0.08)]",
-        destructive: "border border-transparent [background:var(--oa-danger-gradient)] text-destructive-foreground shadow-sm hover:shadow-[0_10px_20px_rgba(23,32,51,0.08)]",
-        outline: "border border-[var(--oa-control-border)] bg-[var(--oa-control-bg)] text-[var(--oa-ink)] hover:bg-[var(--oa-paper-soft)] hover:shadow-[0_10px_20px_rgba(23,32,51,0.08)]",
-        secondary: "border border-[var(--oa-control-border)] bg-[var(--oa-paper-soft)] text-[var(--oa-ink)] hover:bg-[var(--oa-paper-soft)] hover:shadow-[0_10px_20px_rgba(23,32,51,0.08)]",
-        ghost: "text-[var(--oa-ink-2)] hover:bg-[var(--oa-paper-soft)] hover:text-[var(--oa-ink)]",
-        link: "text-[var(--oa-blue)] underline-offset-4 hover:underline",
+        default: "bg-[var(--va-fg)] text-[var(--va-bg)] hover:opacity-90",
+        destructive: "bg-[var(--va-danger)] text-white hover:opacity-90",
+        outline: "border border-[var(--va-border)] bg-[var(--va-card)] text-[var(--va-fg)] hover:bg-[var(--va-hover)] hover:border-[var(--va-muted-soft)]",
+        secondary: "bg-[var(--va-hover)] text-[var(--va-fg)] hover:opacity-80",
+        ghost: "text-[var(--va-fg-2)] hover:bg-[var(--va-hover)] hover:text-[var(--va-fg)]",
+        link: "text-[var(--va-accent)] underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-11 px-4 py-2 md:h-10",
-        sm: "h-10 px-4 md:h-9 md:px-3",
-        lg: "h-12 px-8 md:h-11",
-        icon: "h-11 w-11 md:h-10 md:w-10",
+        default: "h-10 px-4 py-2",
+        sm: "h-9 px-3",
+        lg: "h-12 px-8 text-base",
+        icon: "h-10 w-10",
       },
     },
     defaultVariants: {

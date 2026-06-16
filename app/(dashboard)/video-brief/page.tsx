@@ -76,11 +76,11 @@ function ArchiveDetail({ archive }: { archive: SerializedVideoBriefArchive }) {
   return (
     <div className="grid gap-5">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
-        <div className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--oa-card-border)] bg-[var(--oa-paper-soft)]">
+        <div className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--va-border)] bg-[var(--va-card-soft)]">
           {archive.coverUrl ? (
             <img src={archive.coverUrl} alt="" className="aspect-video w-full object-cover" />
           ) : (
-            <div className="flex aspect-video items-center justify-center text-[var(--oa-muted)]">
+            <div className="flex aspect-video items-center justify-center text-[var(--va-muted)]">
               <Clapperboard className="h-10 w-10" />
             </div>
           )}
@@ -97,35 +97,35 @@ function ArchiveDetail({ archive }: { archive: SerializedVideoBriefArchive }) {
                 </Badge>
               ) : null}
             </div>
-            <h2 className="mt-3 break-words font-heading text-2xl font-bold leading-tight text-[var(--oa-ink)]">
+            <h2 className="mt-3 break-words text-2xl font-bold leading-tight tracking-tight text-[var(--va-fg)]">
               {getArchiveTitle(archive)}
             </h2>
             {archive.author ? (
-              <p className="mt-2 text-sm text-[var(--oa-muted)]">{archive.author}</p>
+              <p className="mt-2 text-sm text-[var(--va-muted)]">{archive.author}</p>
             ) : null}
           </div>
 
-          <div className="rounded-[var(--radius-md)] border border-[var(--oa-card-border)] bg-[var(--oa-paper-soft)] p-4">
-            <p className="text-sm font-bold text-[var(--oa-ink)]">视频速览</p>
-            <p className="mt-2 text-sm leading-7 text-[var(--oa-ink-2)]">{archive.analysis.summary}</p>
+          <div className="rounded-[var(--radius-md)] border border-[var(--va-border)] bg-[var(--va-card-soft)] p-4">
+            <p className="text-sm font-semibold text-[var(--va-fg)]">视频速览</p>
+            <p className="mt-2 text-sm leading-7 text-[var(--va-fg-2)]">{archive.analysis.summary}</p>
           </div>
         </div>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(300px,0.9fr)]">
         <div className="space-y-4">
-          <section className="rounded-[var(--radius-md)] border border-[var(--oa-card-border)] bg-[var(--oa-card-bg)] p-4">
-            <p className="text-sm font-bold text-[var(--oa-ink)]">重点解读</p>
-            <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-[var(--oa-ink-2)]">{archive.analysis.interpretation}</p>
+          <section className="rounded-[var(--radius-md)] border border-[var(--va-border)] bg-[var(--va-card)] p-4">
+            <p className="text-sm font-semibold text-[var(--va-fg)]">重点解读</p>
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-[var(--va-fg-2)]">{archive.analysis.interpretation}</p>
           </section>
 
-          <section className="rounded-[var(--radius-md)] border border-[var(--oa-card-border)] bg-[var(--oa-card-bg)] p-4">
-            <p className="text-sm font-bold text-[var(--oa-ink)]">关键片段</p>
+          <section className="rounded-[var(--radius-md)] border border-[var(--va-border)] bg-[var(--va-card)] p-4">
+            <p className="text-sm font-semibold text-[var(--va-fg)]">关键片段</p>
             <div className="mt-3 space-y-3">
               {archive.analysis.timeline.map((item, index) => (
-                <div key={`${item.time}-${index}`} className="grid gap-2 rounded-[var(--radius-md)] bg-[var(--oa-paper-soft)] p-3 sm:grid-cols-[108px_minmax(0,1fr)]">
-                  <div className="text-xs font-bold text-[var(--oa-red)]">{item.time || "时间未标注"}</div>
-                  <div className="text-sm leading-6 text-[var(--oa-ink-2)]">{item.content}</div>
+                <div key={`${item.time}-${index}`} className="grid gap-2 rounded-[var(--radius-md)] bg-[var(--va-card-soft)] p-3 sm:grid-cols-[108px_minmax(0,1fr)]">
+                  <div className="text-xs font-semibold text-[var(--va-accent)]">{item.time || "时间未标注"}</div>
+                  <div className="text-sm leading-6 text-[var(--va-fg-2)]">{item.content}</div>
                 </div>
               ))}
             </div>
@@ -133,8 +133,8 @@ function ArchiveDetail({ archive }: { archive: SerializedVideoBriefArchive }) {
         </div>
 
         <div className="space-y-4">
-          <section className="rounded-[var(--radius-md)] border border-[var(--oa-card-border)] bg-[var(--oa-card-bg)] p-4">
-            <p className="text-sm font-bold text-[var(--oa-ink)]">AI 标签</p>
+          <section className="rounded-[var(--radius-md)] border border-[var(--va-border)] bg-[var(--va-card)] p-4">
+            <p className="text-sm font-semibold text-[var(--va-fg)]">AI 标签</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {archive.analysis.tags.map((tag) => (
                 <Badge key={tag}>{tag}</Badge>
@@ -142,11 +142,11 @@ function ArchiveDetail({ archive }: { archive: SerializedVideoBriefArchive }) {
             </div>
           </section>
 
-          <section className="rounded-[var(--radius-md)] border border-[var(--oa-card-border)] bg-[var(--oa-card-bg)] p-4">
-            <p className="text-sm font-bold text-[var(--oa-ink)]">重点信息</p>
+          <section className="rounded-[var(--radius-md)] border border-[var(--va-border)] bg-[var(--va-card)] p-4">
+            <p className="text-sm font-semibold text-[var(--va-fg)]">重点信息</p>
             <div className="mt-3 grid gap-2">
               {archive.analysis.keyPoints.map((point) => (
-                <div key={point} className="rounded-[var(--radius-md)] bg-[var(--oa-paper-soft)] px-3 py-2 text-sm text-[var(--oa-ink-2)]">
+                <div key={point} className="rounded-[var(--radius-md)] bg-[var(--va-card-soft)] px-3 py-2 text-sm text-[var(--va-fg-2)]">
                   {point}
                 </div>
               ))}
@@ -154,8 +154,8 @@ function ArchiveDetail({ archive }: { archive: SerializedVideoBriefArchive }) {
           </section>
 
           {archive.analysis.people.length || archive.analysis.places.length || archive.analysis.organizations.length ? (
-            <section className="rounded-[var(--radius-md)] border border-[var(--oa-card-border)] bg-[var(--oa-card-bg)] p-4">
-              <p className="text-sm font-bold text-[var(--oa-ink)]">实体</p>
+            <section className="rounded-[var(--radius-md)] border border-[var(--va-border)] bg-[var(--va-card)] p-4">
+              <p className="text-sm font-semibold text-[var(--va-fg)]">实体</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {[...archive.analysis.people, ...archive.analysis.places, ...archive.analysis.organizations].map((item) => (
                   <Badge key={item} variant="secondary">{item}</Badge>
@@ -165,11 +165,11 @@ function ArchiveDetail({ archive }: { archive: SerializedVideoBriefArchive }) {
           ) : null}
 
           {archive.analysis.uncertainPoints.length ? (
-            <section className="rounded-[var(--radius-md)] border border-[var(--oa-card-border)] bg-[var(--oa-card-bg)] p-4">
-              <p className="text-sm font-bold text-[var(--oa-ink)]">待确认</p>
+            <section className="rounded-[var(--radius-md)] border border-[var(--va-border)] bg-[var(--va-card)] p-4">
+              <p className="text-sm font-semibold text-[var(--va-fg)]">待确认</p>
               <div className="mt-3 grid gap-2">
                 {archive.analysis.uncertainPoints.map((item) => (
-                  <div key={item} className="rounded-[var(--radius-md)] bg-[var(--oa-paper-soft)] px-3 py-2 text-sm text-[var(--oa-muted)]">
+                  <div key={item} className="rounded-[var(--radius-md)] bg-[var(--va-card-soft)] px-3 py-2 text-sm text-[var(--va-muted)]">
                     {item}
                   </div>
                 ))}
@@ -305,18 +305,13 @@ export default function VideoBriefPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       <Card className="overflow-hidden">
-        <CardHeader className="bg-[var(--oa-paper-soft)]">
+        <CardHeader>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--oa-red-soft-bg)] text-[var(--oa-red)]">
-                <Clapperboard className="h-5 w-5" />
-              </div>
-              <div>
-                <CardTitle>视频速览</CardTitle>
-                <CardDescription>输入公开视频地址，生成可归档的解读和标签。</CardDescription>
-              </div>
+            <div>
+              <CardTitle>视频速览</CardTitle>
+              <CardDescription>输入公开视频地址，生成可归档的解读和标签。</CardDescription>
             </div>
-            <div className="flex items-center gap-2 text-sm font-bold text-[var(--oa-muted)]">
+            <div className="flex items-center gap-2 text-sm font-medium text-[var(--va-muted)]">
               <Archive className="h-4 w-4" />
               {total} 条归档
             </div>
@@ -328,11 +323,11 @@ export default function VideoBriefPage() {
               <input
                 value={url}
                 onChange={(event) => setUrl(event.target.value)}
-                placeholder="https://..."
+                placeholder="粘贴视频链接，支持 B 站、抖音、YouTube 等"
                 className="h-12 w-full pr-12 text-base"
                 disabled={analyzing}
               />
-              <ExternalLink className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--oa-muted)]" />
+              <ExternalLink className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--va-muted)]" />
             </div>
             <Button type="submit" size="lg" disabled={analyzing} className="min-w-[148px]">
               {analyzing ? (
@@ -356,14 +351,9 @@ export default function VideoBriefPage() {
       {currentArchive ? (
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-[rgba(31,138,112,0.08)] text-[var(--oa-green)]">
-                <Sparkles className="h-5 w-5" />
-              </div>
-              <div>
-                <CardTitle className="text-base">最新解读</CardTitle>
-                <CardDescription>{formatRelativeTime(currentArchive.createdAt)}</CardDescription>
-              </div>
+            <div>
+              <CardTitle className="text-base">最新解读</CardTitle>
+              <CardDescription>{formatRelativeTime(currentArchive.createdAt)}</CardDescription>
             </div>
           </CardHeader>
           <CardContent>
@@ -375,14 +365,9 @@ export default function VideoBriefPage() {
       <Card>
         <CardHeader>
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-[var(--oa-paper-soft)] text-[var(--oa-blue)]">
-                <Archive className="h-5 w-5" />
-              </div>
-              <div>
-                <CardTitle className="text-base">视频归档</CardTitle>
-                <CardDescription>按时间保存每次视频速览结果。</CardDescription>
-              </div>
+            <div>
+              <CardTitle className="text-base">视频归档</CardTitle>
+              <CardDescription>按时间保存每次视频速览结果。</CardDescription>
             </div>
 
             <form onSubmit={handleSearch} className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] xl:w-[460px]">
@@ -393,7 +378,7 @@ export default function VideoBriefPage() {
                   placeholder="搜索标题、摘要、标签"
                   className="h-10 w-full pr-10"
                 />
-                <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--oa-muted)]" />
+                <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--va-muted)]" />
               </div>
               <Button type="submit" variant="outline">
                 <Search className="mr-2 h-4 w-4" />
@@ -418,10 +403,10 @@ export default function VideoBriefPage() {
                   setTag(item);
                   fetchArchives(1, { q, tag: item });
                 }}
-                className={`inline-flex h-9 items-center rounded-full border px-3 text-xs font-bold transition ${
+                className={`inline-flex h-9 items-center rounded-full border px-3 text-xs font-medium transition ${
                   tag === item
-                    ? "border-[var(--oa-red-soft-border)] bg-[var(--oa-red-soft-bg)] text-[var(--oa-red)]"
-                    : "border-[var(--oa-card-border)] bg-[var(--oa-card-bg)] text-[var(--oa-muted)] hover:bg-[var(--oa-paper-soft)] hover:text-[var(--oa-ink)]"
+                    ? "border-[var(--va-accent-border)] bg-[var(--va-accent-soft)] text-[var(--va-accent)]"
+                    : "border-[var(--va-border)] bg-[var(--va-card)] text-[var(--va-muted)] hover:bg-[var(--va-hover)] hover:text-[var(--va-fg)]"
                 }`}
               >
                 {item}
@@ -435,7 +420,7 @@ export default function VideoBriefPage() {
           {loadingArchives ? (
             <div className="grid gap-3">
               {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="h-28 animate-skeleton-pulse rounded-[var(--radius-md)] bg-[var(--oa-paper-soft)]" />
+                <div key={index} className="h-28 animate-skeleton-pulse rounded-[var(--radius-md)] bg-[var(--va-border-soft)]" />
               ))}
             </div>
           ) : archives.length === 0 ? (
@@ -450,13 +435,13 @@ export default function VideoBriefPage() {
                 const expanded = expandedId === archive.id;
                 const duration = formatDuration(archive.durationSeconds);
                 return (
-                  <div key={archive.id} className="rounded-[var(--radius-md)] border border-[var(--oa-card-border)] bg-[var(--oa-card-bg)] p-4 shadow-[var(--oa-shadow-soft)]">
+                  <div key={archive.id} className="rounded-[var(--radius-md)] border border-[var(--va-border)] bg-[var(--va-card)] p-4 transition-colors hover:border-[var(--va-muted-soft)]">
                     <div className="grid gap-4 lg:grid-cols-[128px_minmax(0,1fr)_auto]">
-                      <div className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--oa-card-border)] bg-[var(--oa-paper-soft)]">
+                      <div className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--va-border)] bg-[var(--va-card-soft)]">
                         {archive.coverUrl ? (
                           <img src={archive.coverUrl} alt="" className="aspect-video h-full w-full object-cover" />
                         ) : (
-                          <div className="flex aspect-video items-center justify-center text-[var(--oa-muted)]">
+                          <div className="flex aspect-video items-center justify-center text-[var(--va-muted)]">
                             <Clapperboard className="h-6 w-6" />
                           </div>
                         )}
@@ -465,13 +450,13 @@ export default function VideoBriefPage() {
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <Badge variant="secondary">{archive.platform}</Badge>
-                          <span className="text-xs text-[var(--oa-muted)]">{formatRelativeTime(archive.createdAt)}</span>
-                          {duration ? <span className="text-xs text-[var(--oa-muted)]">{duration}</span> : null}
+                          <span className="text-xs text-[var(--va-muted)]">{formatRelativeTime(archive.createdAt)}</span>
+                          {duration ? <span className="text-xs text-[var(--va-muted)]">{duration}</span> : null}
                         </div>
-                        <h3 className="mt-2 break-words font-heading text-lg font-bold leading-snug text-[var(--oa-ink)]">
+                        <h3 className="mt-2 break-words text-lg font-semibold leading-snug tracking-tight text-[var(--va-fg)]">
                           {getArchiveTitle(archive)}
                         </h3>
-                        <p className="mt-2 line-clamp-2 text-sm leading-6 text-[var(--oa-ink-2)]">{archive.analysis.summary}</p>
+                        <p className="mt-2 line-clamp-2 text-sm leading-6 text-[var(--va-fg-2)]">{archive.analysis.summary}</p>
                         <div className="mt-3 flex flex-wrap gap-2">
                           {archive.analysis.tags.slice(0, 8).map((item) => (
                             <Badge key={item} variant="outline">{item}</Badge>
@@ -484,13 +469,13 @@ export default function VideoBriefPage() {
                           {expanded ? "收起" : "详情"}
                         </Button>
                         <Button type="button" variant="outline" size="icon" onClick={() => handleDelete(archive)} aria-label="删除归档">
-                          <Trash2 className="h-4 w-4 text-[var(--oa-red)]" />
+                          <Trash2 className="h-4 w-4 text-[var(--va-danger)]" />
                         </Button>
                       </div>
                     </div>
 
                     {expanded ? (
-                      <div className="mt-5 border-t border-[var(--oa-card-head-border)] pt-5">
+                      <div className="mt-5 border-t border-[var(--va-border)] pt-5">
                         <ArchiveDetail archive={archive} />
                       </div>
                     ) : null}
@@ -500,8 +485,8 @@ export default function VideoBriefPage() {
             </div>
           )}
 
-          <div className="mt-5 flex flex-col gap-3 border-t border-[var(--oa-card-head-border)] pt-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-sm text-[var(--oa-muted)]">
+          <div className="mt-5 flex flex-col gap-3 border-t border-[var(--va-border)] pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-sm text-[var(--va-muted)]">
               第 {page} / {totalPages} 页
             </div>
             <div className="flex gap-2">

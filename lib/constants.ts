@@ -1,8 +1,8 @@
-export const APP_NAME = "CPEC 视频速览";
-export const APP_TAGLINE = "输入公开视频地址，生成解读、标签和可检索归档";
+export const APP_NAME = "Video Analyzer";
+export const APP_TAGLINE = "粘贴视频链接，AI 自动生成解读与标签";
 
-export const SESSION_COOKIE_NAME = "cpec_va_session";
-export const SESSION_ROLE_COOKIE_NAME = "cpec_va_role";
+export const SESSION_COOKIE_NAME = "va_session";
+export const SESSION_ROLE_COOKIE_NAME = "va_role";
 export const SESSION_IDLE_UPDATE_MINUTES = 10;
 
 export const DEFAULT_SECURITY_SETTINGS = {
