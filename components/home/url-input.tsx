@@ -94,6 +94,9 @@ export function HomeUrlInput() {
         </div>
       </form>
       {error ? <p className="home-input-error">{error}</p> : null}
+      <p className="home-input-hint">
+        资源紧张，目前仅支持解读 10 分钟以内的视频
+      </p>
     </div>
   );
 }

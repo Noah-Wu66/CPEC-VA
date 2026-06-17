@@ -30,7 +30,12 @@ export function ArchiveDetail({ archive }: { archive: SerializedVideoBriefArchiv
       <div className="grid gap-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
         <div className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--va-border)] bg-[var(--va-card-soft)]">
           {archive.coverUrl ? (
-            <img src={archive.coverUrl} alt="" className="aspect-video w-full object-cover" />
+            <img
+              src={archive.coverUrl}
+              alt=""
+              referrerPolicy="no-referrer"
+              className="aspect-video w-full object-cover"
+            />
           ) : (
             <div className="flex aspect-video items-center justify-center text-[var(--va-muted)]">
               <Clapperboard className="h-10 w-10" />

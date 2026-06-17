@@ -90,7 +90,12 @@ function SidebarArchiveItem({
       <button type="button" onClick={onSelect} className="flex w-full items-start gap-3 text-left">
         <div className="h-12 w-20 shrink-0 overflow-hidden rounded-[var(--radius-sm)] border border-[var(--va-border)] bg-[var(--va-card-soft)]">
           {archive.coverUrl ? (
-            <img src={archive.coverUrl} alt="" className="h-full w-full object-cover" />
+            <img
+              src={archive.coverUrl}
+              alt=""
+              referrerPolicy="no-referrer"
+              className="h-full w-full object-cover"
+            />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-[var(--va-muted)]">
               <Clapperboard className="h-4 w-4" />
