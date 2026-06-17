@@ -23,16 +23,11 @@ function getArchiveTitle(archive: SerializedVideoBriefArchive) {
 }
 
 interface HomeSidebarProps {
-  currentUser: {
-    email: string;
-    displayName?: string;
-  };
   archives: SerializedVideoBriefArchive[];
   activeArchiveId?: string;
 }
 
 export function HomeSidebar({
-  currentUser,
   archives,
   activeArchiveId,
 }: HomeSidebarProps) {
@@ -81,11 +76,6 @@ export function HomeSidebar({
       router.refresh();
     }
   }
-
-  const initials = useMemo(() => {
-    const name = currentUser.displayName || currentUser.email || "User";
-    return name.slice(0, 2).toUpperCase();
-  }, [currentUser.displayName, currentUser.email]);
 
   return (
     <>
@@ -184,18 +174,6 @@ export function HomeSidebar({
           title="退出登录"
         >
           <LogOut className="h-[18px] w-[18px]" />
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setMobileOpen(false);
-            router.push("/video-brief");
-          }}
-          className="home-sidebar-user"
-          title={currentUser.email}
-        >
-          <span className="home-sidebar-avatar">{initials}</span>
-          <span className="home-sidebar-user-name">{currentUser.email}</span>
         </button>
       </div>
     </aside>

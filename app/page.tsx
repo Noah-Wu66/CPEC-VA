@@ -27,10 +27,6 @@ export default async function HomePage() {
 
   return (
     <ChatShell
-      currentUser={{
-        email: current.user.email,
-        displayName: current.user.displayName,
-      }}
       archives={archives}
     >
       <div className="home-welcome">

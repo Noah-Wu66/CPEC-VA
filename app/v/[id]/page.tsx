@@ -44,10 +44,6 @@ export default async function VideoDetailPage({
 
   return (
     <ChatShell
-      currentUser={{
-        email: current.user.email,
-        displayName: current.user.displayName,
-      }}
       archives={archives}
       activeArchiveId={id}
     >
