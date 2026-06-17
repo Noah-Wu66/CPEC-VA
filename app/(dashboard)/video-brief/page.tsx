@@ -533,7 +533,7 @@ export default function VideoBriefPage() {
       </aside>
 
       <div className="app-content">
-        <div className="site-layout-content mx-auto my-auto w-full max-w-3xl space-y-6">
+        <div className="site-layout-content mx-auto w-full max-w-3xl space-y-6">
           <div className="rounded-[12px] border border-[var(--va-border)] bg-[var(--va-card)] shadow-[var(--va-shadow-sm)]">
             <div className="border-b border-[var(--va-border)] p-5 md:p-6">
               <h3 className="text-lg font-semibold leading-none tracking-tight text-[var(--va-fg)]">视频速览</h3>

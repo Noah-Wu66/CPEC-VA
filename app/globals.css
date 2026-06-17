@@ -319,6 +319,7 @@ html[data-oa-theme="dark"] .brand-mark,
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  justify-content: center;
 }
 
 .site-layout-content {
