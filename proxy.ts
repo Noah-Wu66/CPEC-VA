@@ -5,8 +5,7 @@ const PUBLIC_PAGE_PATHS = new Set(["/login"]);
 const PUBLIC_API_PREFIXES = [
   "/api/auth/login",
   "/api/auth/register",
-  "/api/auth/logout",
-  "/api/video-brief/media"
+  "/api/auth/logout"
 ];
 
 function isStaticPath(pathname: string) {

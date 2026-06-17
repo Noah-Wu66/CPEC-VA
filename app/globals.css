@@ -612,6 +612,13 @@ html[data-oa-theme="dark"] .brand-mark,
   color: var(--va-danger);
 }
 
+.home-input-hint {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--va-muted-soft);
+}
+
 .home-detail {
   flex: 1;
   padding: 32px 24px;

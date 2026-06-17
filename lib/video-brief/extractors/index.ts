@@ -1,11 +1,9 @@
 import { isIP } from "net";
-import { createVideoBriefMediaToken } from "@/lib/video-brief/media-tokens";
 import { normalizeVideoBriefAssetUrl } from "@/lib/video-brief/urls";
 import type { ExtractedVideoSource } from "@/types/video-brief";
 
 const DIRECT_VIDEO_RE = /\.(mp4|m3u8|flv|mov|webm)(?:$|[?#])/i;
 const HLS_MIME_TYPES = new Set(["application/x-mpegurl", "application/vnd.apple.mpegurl"]);
-const VIDEO_BRIEF_MEDIA_ROUTE = "/api/video-brief/media";
 const BROWSER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36";
 const BILIBILI_API_ORIGIN = "https://api.bilibili.com";
 const BILIBILI_WEB_ORIGIN = "https://www.bilibili.com";
@@ -157,20 +155,6 @@ function getBilibiliRequestHeaders(referer = `${BILIBILI_WEB_ORIGIN}/`) {
     Referer: referer,
     "User-Agent": BROWSER_UA,
   };
-}
-
-function getBilibiliMediaHeaders(referer: string, range?: string | null) {
-  const headers: Record<string, string> = {
-    Accept: "*/*",
-    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
-    Origin: BILIBILI_WEB_ORIGIN,
-    Referer: referer,
-    "User-Agent": BROWSER_UA,
-  };
-  if (range) {
-    headers.Range = range;
-  }
-  return headers;
 }
 
 function getBvidFromText(value: string) {
@@ -365,45 +349,10 @@ function getPageRequestHeaders(referer: string) {
   };
 }
 
-export async function buildVideoBriefMediaProxyUrl(
-  mediaUrl: string,
-  publicOrigin: string,
-  referer = "",
-  expiresInSeconds = 12 * 60 * 60,
-) {
-  assertPublicHttpUrl(mediaUrl);
-  const origin = new URL(publicOrigin);
-  if (origin.protocol !== "http:" && origin.protocol !== "https:") {
-    throw new VideoSourceError("媒体代理地址配置无效", 500);
-  }
-  if (!referer) {
-    throw new VideoSourceError("缺少视频来源信息", 500);
-  }
-  const token = await createVideoBriefMediaToken({ mediaUrl, referer, expiresInSeconds });
-  const signed = new URL(VIDEO_BRIEF_MEDIA_ROUTE, origin.origin);
-  signed.searchParams.set("t", token);
-  return signed.toString();
-}
-
-export function fetchVideoBriefMediaUrl(input: string, range?: string | null, referer = "") {
-  assertPublicHttpUrl(input);
-
-  if (!referer) {
-    throw new VideoSourceError("缺少视频来源信息", 403);
-  }
-  const headers = getBilibiliMediaHeaders(referer, range);
-  return fetch(input, { headers });
-}
-
 async function extractBilibiliSource(
   sourceUrl: string,
   signal: AbortSignal | undefined,
-  publicOrigin: string | undefined,
 ): Promise<ExtractedVideoSource> {
-  if (!publicOrigin) {
-    throw new VideoSourceError("缺少视频媒体代理地址", 500);
-  }
-
   const ref = await resolveBilibiliVideoRef(sourceUrl, signal);
   const viewApi = new URL("/x/web-interface/view", BILIBILI_API_ORIGIN);
   viewApi.searchParams.set("bvid", ref.bvid);
@@ -423,8 +372,7 @@ async function extractBilibiliSource(
   playApi.searchParams.set("fourk", "0");
   playApi.searchParams.set("platform", "html5");
   const playData = await fetchBilibiliApi(playApi, canonicalUrl, signal);
-  const mediaUrl = pickBilibiliMediaUrl(playData);
-  const videoUrl = await buildVideoBriefMediaProxyUrl(mediaUrl, publicOrigin, canonicalUrl);
+  const videoUrl = pickBilibiliMediaUrl(playData);
   const title = [viewData?.title, page.part]
     .map((item) => (typeof item === "string" ? item.trim() : ""))
     .filter(Boolean)
@@ -440,20 +388,20 @@ async function extractBilibiliSource(
     coverUrl: normalizeVideoBriefAssetUrl(typeof viewData?.pic === "string" ? viewData.pic : ""),
     durationSeconds: page.durationSeconds,
     videoUrl,
+    mediaReferer: canonicalUrl,
   };
 }
 
 export async function extractVideoSource(
   inputUrl: string,
   signal?: AbortSignal,
-  options: { publicOrigin?: string } = {},
 ): Promise<ExtractedVideoSource> {
   const parsed = assertPublicHttpUrl(String(inputUrl || "").trim());
   const sourceUrl = parsed.toString();
   const platform = getPlatform(sourceUrl);
 
   if (isBilibiliUrl(sourceUrl)) {
-    return extractBilibiliSource(sourceUrl, signal, options.publicOrigin);
+    return extractBilibiliSource(sourceUrl, signal);
   }
 
   if (isDirectVideoUrl(sourceUrl)) {

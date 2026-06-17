@@ -36,9 +36,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const source = await extractVideoSource(parsed.data.url, request.signal, {
-      publicOrigin: request.nextUrl.origin,
-    });
+    const source = await extractVideoSource(parsed.data.url, request.signal);
 
     // 视频时长超过 10 分钟则拦截，只有当平台能提供真实时长时才判断
     if (source.durationSeconds > MAX_VIDEO_DURATION_SECONDS) {

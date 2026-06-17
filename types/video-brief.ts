@@ -32,15 +32,6 @@ export interface VideoBriefArchiveDoc {
   createdAt: Date;
 }
 
-export interface VideoBriefMediaTokenDoc {
-  _id?: ObjectId;
-  tokenHash: string;
-  mediaUrl: string;
-  referer: string;
-  expiresAt: Date;
-  createdAt: Date;
-}
-
 export interface SerializedVideoBriefArchive {
   id: string;
   sourceUrl: string;
@@ -63,5 +54,8 @@ export interface ExtractedVideoSource {
   author: string;
   coverUrl: string;
   durationSeconds: number;
+  // 真实可下载的视频地址：B 站是 CDN 直链，其它平台是原始视频地址
   videoUrl: string;
+  // 下载视频时需要携带的 Referer（B 站防盗链需要，其它平台可为空）
+  mediaReferer?: string;
 }

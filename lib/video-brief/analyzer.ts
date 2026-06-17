@@ -3,6 +3,8 @@ import type { ExtractedVideoSource, VideoBriefAnalysis } from "@/types/video-bri
 
 export const VIDEO_BRIEF_MODEL = "qwen3.5-omni-flash";
 
+const DOWNLOAD_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36";
+
 class VideoBriefAnalysisError extends Error {
   status: number;
 
@@ -116,13 +118,121 @@ function buildPrompt(source: ExtractedVideoSource) {
   ].join("\n");
 }
 
+// 把视频原文件下载到内存。B 站等有防盗链的平台需要带上来源页 Referer。
+async function downloadVideo(source: ExtractedVideoSource, signal?: AbortSignal) {
+  const headers: Record<string, string> = {
+    "User-Agent": DOWNLOAD_USER_AGENT,
+  };
+  if (source.mediaReferer) {
+    headers["Referer"] = source.mediaReferer;
+  }
+
+  const response = await fetch(source.videoUrl, { headers, signal });
+  if (!response.ok) {
+    throw new VideoBriefAnalysisError(`视频下载失败（${response.status}）`, 502);
+  }
+
+  const buffer = Buffer.from(await response.arrayBuffer());
+  if (buffer.length === 0) {
+    throw new VideoBriefAnalysisError("视频内容为空", 502);
+  }
+  return buffer;
+}
+
+interface BailianUploadPolicy {
+  policy: string;
+  signature: string;
+  upload_dir: string;
+  upload_host: string;
+  oss_access_key_id: string;
+  x_oss_object_acl: string;
+  x_oss_forbid_overwrite: string;
+}
+
+// 向百炼申请临时上传凭证（免费临时存储，48 小时有效）。
+async function fetchBailianUploadPolicy(
+  apiKey: string,
+  dashScopeBaseUrl: string,
+  model: string,
+  signal?: AbortSignal,
+): Promise<BailianUploadPolicy> {
+  const url = `${dashScopeBaseUrl}/uploads?action=getPolicy&model=${encodeURIComponent(model)}`;
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    signal,
+  });
+
+  const text = await response.text();
+  let payload: any = {};
+  if (text) {
+    try {
+      payload = JSON.parse(text);
+    } catch {
+      payload = { message: text };
+    }
+  }
+
+  if (!response.ok || payload?.code) {
+    throw new VideoBriefAnalysisError(
+      payload?.message || `获取视频上传凭证失败（${response.status}）`,
+      response.ok ? 502 : response.status,
+    );
+  }
+
+  const data = payload?.data;
+  if (!data?.policy || !data?.upload_host || !data?.upload_dir) {
+    throw new VideoBriefAnalysisError("视频上传凭证格式不正确", 502);
+  }
+
+  return data as BailianUploadPolicy;
+}
+
+// 把视频上传到百炼临时存储，返回阿里云内网地址 oss://...，模型从内网读取，彻底绕开 60 秒下载超时。
+async function uploadVideoToBailian(policy: BailianUploadPolicy, buffer: Buffer, signal?: AbortSignal) {
+  const filename = `video-${Date.now()}.mp4`;
+  const key = `${policy.upload_dir}/${filename}`;
+
+  const form = new FormData();
+  form.append("OSSAccessKeyId", policy.oss_access_key_id);
+  form.append("Signature", policy.signature);
+  form.append("policy", policy.policy);
+  form.append("key", key);
+  form.append("x-oss-object-acl", policy.x_oss_object_acl);
+  form.append("x-oss-forbid-overwrite", policy.x_oss_forbid_overwrite);
+  form.append("success_action_status", "200");
+  form.append("file", new Blob([buffer], { type: "video/mp4" }), filename);
+
+  const response = await fetch(policy.upload_host, { method: "POST", body: form, signal });
+  if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    throw new VideoBriefAnalysisError(
+      `视频上传失败（${response.status}）${body ? `：${body.slice(0, 200)}` : ""}`,
+      502,
+    );
+  }
+
+  return `oss://${key}`;
+}
+
 export async function analyzeVideo(source: ExtractedVideoSource, signal?: AbortSignal) {
-  const { apiKey, openAIBaseUrl } = resolveBailianProviderConfig();
+  const { apiKey, openAIBaseUrl, dashScopeBaseUrl } = resolveBailianProviderConfig();
+
+  // 先把视频下载下来，再上传到百炼临时存储，避免百炼跨境下载公网视频时 60 秒超时。
+  const buffer = await downloadVideo(source, signal);
+  const policy = await fetchBailianUploadPolicy(apiKey, dashScopeBaseUrl, VIDEO_BRIEF_MODEL, signal);
+  const ossUrl = await uploadVideoToBailian(policy, buffer, signal);
+
   const response = await fetch(`${openAIBaseUrl}/chat/completions`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
+      // 必需：让百炼解析 oss:// 内网地址
+      "X-DashScope-OssResourceResolve": "enable",
     },
     body: JSON.stringify({
       model: VIDEO_BRIEF_MODEL,
@@ -133,7 +243,7 @@ export async function analyzeVideo(source: ExtractedVideoSource, signal?: AbortS
             {
               type: "video_url",
               video_url: {
-                url: source.videoUrl,
+                url: ossUrl,
                 fps: 10,
                 min_pixels: 65536,
                 max_pixels: 2048000,
