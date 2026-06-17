@@ -324,7 +324,6 @@ html[data-oa-theme="dark"] .brand-mark,
 
 .site-layout-content {
   min-width: 0;
-  margin: 0;
   padding: 0;
   background: transparent;
   animation: pageFadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
