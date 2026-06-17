@@ -132,11 +132,11 @@ async function downloadVideo(source: ExtractedVideoSource, signal?: AbortSignal)
     throw new VideoBriefAnalysisError(`视频下载失败（${response.status}）`, 502);
   }
 
-  const bytes = new Uint8Array(await response.arrayBuffer());
-  if (bytes.length === 0) {
+  const blob = await response.blob();
+  if (blob.size === 0) {
     throw new VideoBriefAnalysisError("视频内容为空", 502);
   }
-  return bytes;
+  return blob;
 }
 
 interface BailianUploadPolicy {
@@ -192,7 +192,7 @@ async function fetchBailianUploadPolicy(
 }
 
 // 把视频上传到百炼临时存储，返回阿里云内网地址 oss://...，模型从内网读取，彻底绕开 60 秒下载超时。
-async function uploadVideoToBailian(policy: BailianUploadPolicy, buffer: Uint8Array, signal?: AbortSignal) {
+async function uploadVideoToBailian(policy: BailianUploadPolicy, blob: Blob, signal?: AbortSignal) {
   const filename = `video-${Date.now()}.mp4`;
   const key = `${policy.upload_dir}/${filename}`;
 
@@ -204,7 +204,7 @@ async function uploadVideoToBailian(policy: BailianUploadPolicy, buffer: Uint8Ar
   form.append("x-oss-object-acl", policy.x_oss_object_acl);
   form.append("x-oss-forbid-overwrite", policy.x_oss_forbid_overwrite);
   form.append("success_action_status", "200");
-  form.append("file", new Blob([buffer], { type: "video/mp4" }), filename);
+  form.append("file", blob, filename);
 
   const response = await fetch(policy.upload_host, { method: "POST", body: form, signal });
   if (!response.ok) {
@@ -222,9 +222,9 @@ export async function analyzeVideo(source: ExtractedVideoSource, signal?: AbortS
   const { apiKey, openAIBaseUrl, dashScopeBaseUrl } = resolveBailianProviderConfig();
 
   // 先把视频下载下来，再上传到百炼临时存储，避免百炼跨境下载公网视频时 60 秒超时。
-  const buffer = await downloadVideo(source, signal);
+  const blob = await downloadVideo(source, signal);
   const policy = await fetchBailianUploadPolicy(apiKey, dashScopeBaseUrl, VIDEO_BRIEF_MODEL, signal);
-  const ossUrl = await uploadVideoToBailian(policy, buffer, signal);
+  const ossUrl = await uploadVideoToBailian(policy, blob, signal);
 
   const response = await fetch(`${openAIBaseUrl}/chat/completions`, {
     method: "POST",
