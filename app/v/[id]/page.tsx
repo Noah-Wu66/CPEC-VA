@@ -1,8 +1,12 @@
 import { connection } from "next/server";
+import { redirect } from "next/navigation";
 import { requirePageSession } from "@/lib/auth";
-import { HomeUrlInput } from "@/components/home/url-input";
 import { ChatShell } from "@/components/layout/chat-shell";
-import { VideoBriefArchiveRepository } from "@/lib/video-brief/repository";
+import { VideoDetailPageClient } from "@/components/video-brief/video-detail-client";
+import {
+  serializeVideoBriefArchive,
+  VideoBriefArchiveRepository,
+} from "@/lib/video-brief/repository";
 import type { SerializedVideoBriefArchive } from "@/types/video-brief";
 
 const RECENT_LIMIT = 25;
@@ -20,10 +24,23 @@ async function loadRecentArchives(userId: string): Promise<SerializedVideoBriefA
   }
 }
 
-export default async function HomePage() {
+export default async function VideoDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   await connection();
   const current = await requirePageSession();
+  const { id } = await params;
   const archives = await loadRecentArchives(current.user._id.toString());
+
+  const archive = await VideoBriefArchiveRepository.findById(
+    id,
+    current.user._id.toString()
+  );
+  if (!archive) {
+    redirect("/");
+  }
 
   return (
     <ChatShell
@@ -32,11 +49,12 @@ export default async function HomePage() {
         displayName: current.user.displayName,
       }}
       archives={archives}
+      activeArchiveId={id}
     >
-      <div className="home-welcome">
-        <h1 className="home-welcome-title">准备好了，随时开始</h1>
-        <HomeUrlInput />
-      </div>
+      <VideoDetailPageClient
+        archiveId={id}
+        initialArchive={serializeVideoBriefArchive(archive)}
+      />
     </ChatShell>
   );
 }
