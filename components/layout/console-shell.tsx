@@ -6,20 +6,13 @@ interface ConsoleShellProps {
   email: string;
   role: Role;
   children: ReactNode;
-  fullBleed?: boolean;
 }
 
 export function ConsoleShell({ email, role, children }: ConsoleShellProps) {
   return (
     <div className="app-shell">
       <Topbar email={email} role={role} />
-      <main className="app-main">
-        <div className="app-content">
-          <div className="site-layout-content animate-fade-in">
-            {children}
-          </div>
-        </div>
-      </main>
+      <main className="app-main">{children}</main>
     </div>
   );
 }

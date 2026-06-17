@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import {
-  Archive,
   ChevronLeft,
   ChevronRight,
   Clapperboard,
@@ -17,8 +16,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/page";
 import { formatRelativeTime } from "@/lib/client/date";
 import type { SerializedVideoBriefArchive } from "@/types/video-brief";
 
@@ -182,6 +179,201 @@ function ArchiveDetail({ archive }: { archive: SerializedVideoBriefArchive }) {
   );
 }
 
+interface SidebarArchiveItemProps {
+  archive: SerializedVideoBriefArchive;
+  selected: boolean;
+  onSelect: () => void;
+  onDelete: () => void;
+}
+
+function SidebarArchiveItem({ archive, selected, onSelect, onDelete }: SidebarArchiveItemProps) {
+  const duration = formatDuration(archive.durationSeconds);
+  return (
+    <div
+      className={`group relative rounded-[var(--radius-md)] border p-3 transition-colors ${
+        selected
+          ? "border-[var(--va-accent-border)] bg-[var(--va-accent-soft)]"
+          : "border-[var(--va-border)] bg-[var(--va-card)] hover:border-[var(--va-muted-soft)] hover:bg-[var(--va-hover)]"
+      }`}
+    >
+      <button type="button" onClick={onSelect} className="flex w-full items-start gap-3 text-left">
+        <div className="h-12 w-20 shrink-0 overflow-hidden rounded-[var(--radius-sm)] border border-[var(--va-border)] bg-[var(--va-card-soft)]">
+          {archive.coverUrl ? (
+            <img src={archive.coverUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-[var(--va-muted)]">
+              <Clapperboard className="h-4 w-4" />
+            </div>
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <h4 className="line-clamp-2 text-sm font-semibold leading-snug text-[var(--va-fg)]">
+            {getArchiveTitle(archive)}
+          </h4>
+          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-[var(--va-muted)]">
+            <span>{archive.platform}</span>
+            {duration ? <span>· {duration}</span> : null}
+            <span>· {formatRelativeTime(archive.createdAt)}</span>
+          </div>
+        </div>
+      </button>
+      <button
+        type="button"
+        onClick={onDelete}
+        aria-label="删除归档"
+        className="absolute right-2 top-2 hidden h-7 w-7 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--va-border)] bg-[var(--va-card)] text-[var(--va-danger)] transition hover:bg-[var(--va-danger-soft)] group-hover:flex"
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </button>
+    </div>
+  );
+}
+
+interface VideoArchivesSidebarProps {
+  archives: SerializedVideoBriefArchive[];
+  selectedId: string;
+  loading: boolean;
+  error: string;
+  total: number;
+  page: number;
+  totalPages: number;
+  q: string;
+  tag: string;
+  selectedTags: string[];
+  onQChange: (value: string) => void;
+  onSearch: () => void;
+  onTagChange: (nextTag: string) => void;
+  onSelect: (archive: SerializedVideoBriefArchive) => void;
+  onDelete: (archive: SerializedVideoBriefArchive) => void;
+  onRefresh: () => void;
+  onPageChange: (nextPage: number) => void;
+}
+
+function VideoArchivesSidebar({
+  archives,
+  selectedId,
+  loading,
+  error,
+  total,
+  page,
+  totalPages,
+  q,
+  tag,
+  selectedTags,
+  onQChange,
+  onSearch,
+  onTagChange,
+  onSelect,
+  onDelete,
+  onRefresh,
+  onPageChange,
+}: VideoArchivesSidebarProps) {
+  return (
+    <>
+      <div className="app-sidebar-body">
+        <div className="flex items-center justify-between">
+          <div className="text-sm font-semibold text-[var(--va-fg)]">
+            视频归档
+            <span className="ml-2 text-xs font-medium text-[var(--va-muted)]">{total} 条</span>
+          </div>
+          <Button type="button" variant="ghost" size="icon" onClick={onRefresh} disabled={loading} aria-label="刷新归档">
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          </Button>
+        </div>
+
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            onSearch();
+          }}
+          className="relative"
+        >
+          <input
+            value={q}
+            onChange={(event) => onQChange(event.target.value)}
+            placeholder="搜索标题、摘要、标签"
+            className="h-9 w-full pr-9 text-sm"
+          />
+          <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--va-muted)]" />
+        </form>
+
+        <div className="flex flex-wrap items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => onTagChange("")}
+            className={`inline-flex h-7 items-center rounded-full border px-2.5 text-[11px] font-medium transition ${
+              !tag
+                ? "border-[var(--va-accent-border)] bg-[var(--va-accent-soft)] text-[var(--va-accent)]"
+                : "border-[var(--va-border)] bg-[var(--va-card)] text-[var(--va-muted)] hover:bg-[var(--va-hover)] hover:text-[var(--va-fg)]"
+            }`}
+          >
+            <Tags className="mr-1 h-3 w-3" />
+            全部
+          </button>
+          {selectedTags.map((item) => (
+            <button
+              key={item}
+              type="button"
+              onClick={() => onTagChange(item)}
+              className={`inline-flex h-7 max-w-[120px] items-center rounded-full border px-2.5 text-[11px] font-medium transition ${
+                tag === item
+                  ? "border-[var(--va-accent-border)] bg-[var(--va-accent-soft)] text-[var(--va-accent)]"
+                  : "border-[var(--va-border)] bg-[var(--va-card)] text-[var(--va-muted)] hover:bg-[var(--va-hover)] hover:text-[var(--va-fg)]"
+              }`}
+            >
+              <span className="truncate">{item}</span>
+            </button>
+          ))}
+        </div>
+
+        {error ? <div className="alert-danger">{error}</div> : null}
+
+        {loading ? (
+          <div className="grid gap-2">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <div key={index} className="h-[68px] animate-skeleton-pulse rounded-[var(--radius-md)] bg-[var(--va-border-soft)]" />
+            ))}
+          </div>
+        ) : archives.length === 0 ? (
+          <div className="flex flex-1 flex-col items-center justify-center gap-2 py-10 text-center text-[var(--va-muted)]">
+            <Clapperboard className="h-8 w-8" />
+            <p className="text-sm">还没有视频归档</p>
+            <p className="text-xs">完成一次速览后会出现在这里</p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {archives.map((archive) => (
+              <SidebarArchiveItem
+                key={archive.id}
+                archive={archive}
+                selected={archive.id === selectedId}
+                onSelect={() => onSelect(archive)}
+                onDelete={() => onDelete(archive)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {archives.length > 0 ? (
+        <div className="flex shrink-0 items-center justify-between border-t border-[var(--va-border)] px-4 py-3">
+          <span className="text-xs text-[var(--va-muted)]">
+            第 {page} / {totalPages} 页
+          </span>
+          <div className="flex gap-1">
+            <Button type="button" variant="outline" size="icon" disabled={loading || page <= 1} onClick={() => onPageChange(page - 1)} aria-label="上一页">
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button type="button" variant="outline" size="icon" disabled={loading || page >= totalPages} onClick={() => onPageChange(page + 1)} aria-label="下一页">
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      ) : null}
+    </>
+  );
+}
+
 export default function VideoBriefPage() {
   const [url, setUrl] = useState("");
   const [q, setQ] = useState("");
@@ -190,8 +382,7 @@ export default function VideoBriefPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [archives, setArchives] = useState<SerializedVideoBriefArchive[]>([]);
-  const [currentArchive, setCurrentArchive] = useState<SerializedVideoBriefArchive | null>(null);
-  const [expandedId, setExpandedId] = useState("");
+  const [selectedArchive, setSelectedArchive] = useState<SerializedVideoBriefArchive | null>(null);
   const [loadingArchives, setLoadingArchives] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState("");
@@ -250,8 +441,7 @@ export default function VideoBriefPage() {
     if (analyzingRef.current) return;
 
     setError("");
-    setCurrentArchive(null);
-    setExpandedId("");
+    setSelectedArchive(null);
 
     if (!url.trim()) {
       setError("请输入视频网址");
@@ -267,8 +457,13 @@ export default function VideoBriefPage() {
         body: JSON.stringify({ url: url.trim() }),
       });
       const data = await readJson(response);
-      setCurrentArchive(data.archive);
-      await fetchArchives(1);
+      const fresh = data.archive as SerializedVideoBriefArchive | undefined;
+      setQ("");
+      setTag("");
+      await fetchArchives(1, { q: "", tag: "" });
+      if (fresh) {
+        setSelectedArchive(fresh);
+      }
     } catch (analyzeError) {
       setError(getErrorMessage(analyzeError, "视频速览失败"));
     } finally {
@@ -288,220 +483,106 @@ export default function VideoBriefPage() {
         method: "DELETE",
       });
       await readJson(response);
-      setArchives((items) => items.filter((item) => item.id !== archive.id));
-      setCurrentArchive((current) => current?.id === archive.id ? null : current);
-      setExpandedId((current) => current === archive.id ? "" : current);
+      const remaining = archives.filter((item) => item.id !== archive.id);
+      setArchives(remaining);
       setTotal((value) => Math.max(0, value - 1));
+      setSelectedArchive((current) => (current?.id === archive.id ? null : current));
+      if (remaining.length === 0 && page > 1) {
+        fetchArchives(page - 1, { q, tag });
+      }
     } catch (deleteError) {
       setArchiveError(getErrorMessage(deleteError, "删除失败"));
     }
   };
 
-  const handleSearch = (event: FormEvent) => {
-    event.preventDefault();
+  const handleSearch = () => {
     fetchArchives(1, { q, tag });
   };
 
+  const handleTagChange = (nextTag: string) => {
+    setTag(nextTag);
+    fetchArchives(1, { q, tag: nextTag });
+  };
+
+  const handlePageChange = (nextPage: number) => {
+    fetchArchives(nextPage, { q, tag });
+  };
+
   return (
-    <div className="mx-auto max-w-7xl space-y-6">
-      <Card className="overflow-hidden">
-        <CardHeader>
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <CardTitle>视频速览</CardTitle>
-              <CardDescription>输入公开视频地址，生成可归档的解读和标签。</CardDescription>
+    <div className="app-workspace">
+      <aside className="app-sidebar">
+        <VideoArchivesSidebar
+          archives={archives}
+          selectedId={selectedArchive?.id ?? ""}
+          loading={loadingArchives}
+          error={archiveError}
+          total={total}
+          page={page}
+          totalPages={totalPages}
+          q={q}
+          tag={tag}
+          selectedTags={selectedTags}
+          onQChange={setQ}
+          onSearch={handleSearch}
+          onTagChange={handleTagChange}
+          onSelect={setSelectedArchive}
+          onDelete={handleDelete}
+          onRefresh={() => fetchArchives(page)}
+          onPageChange={handlePageChange}
+        />
+      </aside>
+
+      <div className="app-content">
+        <div className="site-layout-content mx-auto max-w-5xl space-y-6">
+          <div className="rounded-[12px] border border-[var(--va-border)] bg-[var(--va-card)] shadow-[var(--va-shadow-sm)]">
+            <div className="border-b border-[var(--va-border)] p-5 md:p-6">
+              <h3 className="text-lg font-semibold leading-none tracking-tight text-[var(--va-fg)]">视频速览</h3>
+              <p className="mt-1 text-sm leading-6 text-[var(--va-muted)]">输入公开视频地址，生成可归档的解读和标签。</p>
             </div>
-            <div className="flex items-center gap-2 text-sm font-medium text-[var(--va-muted)]">
-              <Archive className="h-4 w-4" />
-              {total} 条归档
+            <div className="p-5 pt-0 md:p-6 md:pt-0">
+              <form onSubmit={handleAnalyze} className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+                <div className="relative min-w-0">
+                  <input
+                    value={url}
+                    onChange={(event) => setUrl(event.target.value)}
+                    placeholder="粘贴视频链接，支持 B 站、抖音、YouTube 等"
+                    className="h-12 w-full pr-12 text-base"
+                    disabled={analyzing}
+                  />
+                  <ExternalLink className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--va-muted)]" />
+                </div>
+                <Button type="submit" size="lg" disabled={analyzing} className="min-w-[148px]">
+                  {analyzing ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      解读中
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-5 w-5" />
+                      开始速览
+                    </>
+                  )}
+                </Button>
+              </form>
+
+              {error ? <div className="alert-danger mt-4">{error}</div> : null}
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleAnalyze} className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
-            <div className="relative min-w-0">
-              <input
-                value={url}
-                onChange={(event) => setUrl(event.target.value)}
-                placeholder="粘贴视频链接，支持 B 站、抖音、YouTube 等"
-                className="h-12 w-full pr-12 text-base"
-                disabled={analyzing}
-              />
-              <ExternalLink className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--va-muted)]" />
-            </div>
-            <Button type="submit" size="lg" disabled={analyzing} className="min-w-[148px]">
-              {analyzing ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  解读中
-                </>
-              ) : (
-                <>
-                  <Sparkles className="mr-2 h-5 w-5" />
-                  开始速览
-                </>
-              )}
-            </Button>
-          </form>
 
-          {error ? <div className="alert-danger mt-4">{error}</div> : null}
-        </CardContent>
-      </Card>
-
-      {currentArchive ? (
-        <Card>
-          <CardHeader>
-            <div>
-              <CardTitle className="text-base">最新解读</CardTitle>
-              <CardDescription>{formatRelativeTime(currentArchive.createdAt)}</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ArchiveDetail archive={currentArchive} />
-          </CardContent>
-        </Card>
-      ) : null}
-
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div>
-              <CardTitle className="text-base">视频归档</CardTitle>
-              <CardDescription>按时间保存每次视频速览结果。</CardDescription>
-            </div>
-
-            <form onSubmit={handleSearch} className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] xl:w-[460px]">
-              <div className="relative min-w-0">
-                <input
-                  value={q}
-                  onChange={(event) => setQ(event.target.value)}
-                  placeholder="搜索标题、摘要、标签"
-                  className="h-10 w-full pr-10"
-                />
-                <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--va-muted)]" />
+          {selectedArchive ? (
+            <div className="rounded-[12px] border border-[var(--va-border)] bg-[var(--va-card)] shadow-[var(--va-shadow-sm)]">
+              <div className="border-b border-[var(--va-border)] p-5 md:p-6">
+                <h3 className="text-base font-semibold leading-none tracking-tight text-[var(--va-fg)]">{getArchiveTitle(selectedArchive)}</h3>
+                <p className="mt-1 text-sm text-[var(--va-muted)]">{formatRelativeTime(selectedArchive.createdAt)}</p>
               </div>
-              <Button type="submit" variant="outline">
-                <Search className="mr-2 h-4 w-4" />
-                搜索
-              </Button>
-            </form>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {archiveError ? <div className="alert-danger mb-4">{archiveError}</div> : null}
-
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <Button type="button" variant={tag ? "outline" : "secondary"} size="sm" onClick={() => { setTag(""); fetchArchives(1, { q, tag: "" }); }}>
-              <Tags className="mr-2 h-4 w-4" />
-              全部标签
-            </Button>
-            {selectedTags.map((item) => (
-              <button
-                key={item}
-                type="button"
-                onClick={() => {
-                  setTag(item);
-                  fetchArchives(1, { q, tag: item });
-                }}
-                className={`inline-flex h-9 items-center rounded-full border px-3 text-xs font-medium transition ${
-                  tag === item
-                    ? "border-[var(--va-accent-border)] bg-[var(--va-accent-soft)] text-[var(--va-accent)]"
-                    : "border-[var(--va-border)] bg-[var(--va-card)] text-[var(--va-muted)] hover:bg-[var(--va-hover)] hover:text-[var(--va-fg)]"
-                }`}
-              >
-                {item}
-              </button>
-            ))}
-            <Button type="button" variant="ghost" size="icon" onClick={() => fetchArchives(page)} disabled={loadingArchives} aria-label="刷新归档">
-              <RefreshCw className={`h-4 w-4 ${loadingArchives ? "animate-spin" : ""}`} />
-            </Button>
-          </div>
-
-          {loadingArchives ? (
-            <div className="grid gap-3">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="h-28 animate-skeleton-pulse rounded-[var(--radius-md)] bg-[var(--va-border-soft)]" />
-              ))}
+              <div className="p-5 pt-0 md:p-6 md:pt-0">
+                <ArchiveDetail archive={selectedArchive} />
+              </div>
             </div>
-          ) : archives.length === 0 ? (
-            <EmptyState
-              icon={<Clapperboard className="h-6 w-6" />}
-              title="还没有视频归档"
-              description="完成一次视频速览后，结果会出现在这里。"
-            />
-          ) : (
-            <div className="space-y-4">
-              {archives.map((archive) => {
-                const expanded = expandedId === archive.id;
-                const duration = formatDuration(archive.durationSeconds);
-                return (
-                  <div key={archive.id} className="rounded-[var(--radius-md)] border border-[var(--va-border)] bg-[var(--va-card)] p-4 transition-colors hover:border-[var(--va-muted-soft)]">
-                    <div className="grid gap-4 lg:grid-cols-[128px_minmax(0,1fr)_auto]">
-                      <div className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--va-border)] bg-[var(--va-card-soft)]">
-                        {archive.coverUrl ? (
-                          <img src={archive.coverUrl} alt="" className="aspect-video h-full w-full object-cover" />
-                        ) : (
-                          <div className="flex aspect-video items-center justify-center text-[var(--va-muted)]">
-                            <Clapperboard className="h-6 w-6" />
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant="secondary">{archive.platform}</Badge>
-                          <span className="text-xs text-[var(--va-muted)]">{formatRelativeTime(archive.createdAt)}</span>
-                          {duration ? <span className="text-xs text-[var(--va-muted)]">{duration}</span> : null}
-                        </div>
-                        <h3 className="mt-2 break-words text-lg font-semibold leading-snug tracking-tight text-[var(--va-fg)]">
-                          {getArchiveTitle(archive)}
-                        </h3>
-                        <p className="mt-2 line-clamp-2 text-sm leading-6 text-[var(--va-fg-2)]">{archive.analysis.summary}</p>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {archive.analysis.tags.slice(0, 8).map((item) => (
-                            <Badge key={item} variant="outline">{item}</Badge>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2 lg:flex-col">
-                        <Button type="button" variant="outline" size="sm" onClick={() => setExpandedId(expanded ? "" : archive.id)}>
-                          {expanded ? "收起" : "详情"}
-                        </Button>
-                        <Button type="button" variant="outline" size="icon" onClick={() => handleDelete(archive)} aria-label="删除归档">
-                          <Trash2 className="h-4 w-4 text-[var(--va-danger)]" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    {expanded ? (
-                      <div className="mt-5 border-t border-[var(--va-border)] pt-5">
-                        <ArchiveDetail archive={archive} />
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          <div className="mt-5 flex flex-col gap-3 border-t border-[var(--va-border)] pt-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-sm text-[var(--va-muted)]">
-              第 {page} / {totalPages} 页
-            </div>
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" size="sm" disabled={loadingArchives || page <= 1} onClick={() => fetchArchives(page - 1)}>
-                <ChevronLeft className="mr-1 h-4 w-4" />
-                上一页
-              </Button>
-              <Button type="button" variant="outline" size="sm" disabled={loadingArchives || page >= totalPages} onClick={() => fetchArchives(page + 1)}>
-                下一页
-                <ChevronRight className="ml-1 h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 }

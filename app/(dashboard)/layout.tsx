@@ -17,11 +17,23 @@ function DashboardLayoutFallback() {
         </div>
       </header>
       <main className="app-main">
-        <div className="app-content">
-          <div className="site-layout-content">
-            <div className="space-y-4">
-              <div className="h-28 animate-skeleton-pulse rounded-[12px] bg-[var(--va-hover)]" />
-              <div className="h-48 animate-skeleton-pulse rounded-[12px] bg-[var(--va-hover)]" />
+        <div className="app-workspace">
+          <aside className="app-sidebar">
+            <div className="app-sidebar-body">
+              <div className="h-9 w-full animate-skeleton-pulse rounded-[var(--radius-md)] bg-[var(--va-hover)]" />
+              <div className="space-y-2">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <div key={index} className="h-[68px] animate-skeleton-pulse rounded-[var(--radius-md)] bg-[var(--va-hover)]" />
+                ))}
+              </div>
+            </div>
+          </aside>
+          <div className="app-content">
+            <div className="site-layout-content">
+              <div className="space-y-4">
+                <div className="h-28 animate-skeleton-pulse rounded-[12px] bg-[var(--va-hover)]" />
+                <div className="h-48 animate-skeleton-pulse rounded-[12px] bg-[var(--va-hover)]" />
+              </div>
             </div>
           </div>
         </div>
