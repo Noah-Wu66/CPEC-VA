@@ -132,11 +132,11 @@ async function downloadVideo(source: ExtractedVideoSource, signal?: AbortSignal)
     throw new VideoBriefAnalysisError(`视频下载失败（${response.status}）`, 502);
   }
 
-  const buffer = Buffer.from(await response.arrayBuffer());
-  if (buffer.length === 0) {
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  if (bytes.length === 0) {
     throw new VideoBriefAnalysisError("视频内容为空", 502);
   }
-  return buffer;
+  return bytes;
 }
 
 interface BailianUploadPolicy {
@@ -192,7 +192,7 @@ async function fetchBailianUploadPolicy(
 }
 
 // 把视频上传到百炼临时存储，返回阿里云内网地址 oss://...，模型从内网读取，彻底绕开 60 秒下载超时。
-async function uploadVideoToBailian(policy: BailianUploadPolicy, buffer: Buffer, signal?: AbortSignal) {
+async function uploadVideoToBailian(policy: BailianUploadPolicy, buffer: Uint8Array, signal?: AbortSignal) {
   const filename = `video-${Date.now()}.mp4`;
   const key = `${policy.upload_dir}/${filename}`;
 
