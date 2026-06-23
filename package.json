@@ -12,6 +12,7 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
+    "@radix-ui/react-alert-dialog": "^1.1.17",
     "@radix-ui/react-label": "^2.1.1",
     "@vercel/blob": "^2.3.3",
     "@vercel/sandbox": "^0.0.18",

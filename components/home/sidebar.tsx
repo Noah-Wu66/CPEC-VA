@@ -15,6 +15,16 @@ import {
 } from "lucide-react";
 import { BrandMark } from "@/components/brand/brand-logo";
 import { useAppTheme, type ThemeMode } from "@/components/layout/app-theme-provider";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { formatRelativeTime } from "@/lib/client/date";
 import { readJson } from "@/lib/client/api";
 import type { SerializedVideoBriefArchive } from "@/types/video-brief";
@@ -35,6 +45,8 @@ export function HomeSidebar({
   const router = useRouter();
   const { themeMode, setThemeMode } = useAppTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<SerializedVideoBriefArchive | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const themeItems = useMemo<ThemeMode[]>(() => ["light", "dark", "system"], []);
 
@@ -57,15 +69,21 @@ export function HomeSidebar({
     window.location.href = "/api/auth/logout";
   }
 
-  async function handleDelete(
+  function handleDelete(
     archive: SerializedVideoBriefArchive,
     event: React.MouseEvent<HTMLButtonElement>
   ) {
     event.preventDefault();
     event.stopPropagation();
-    if (!confirm("确定要删除这条视频归档吗？")) {
+    setDeleteTarget(archive);
+  }
+
+  async function confirmDelete() {
+    const archive = deleteTarget;
+    if (!archive || deleting) {
       return;
     }
+    setDeleting(true);
     try {
       const response = await fetch(`/api/video-brief/archives/${archive.id}`, { method: "DELETE" });
       await readJson(response);
@@ -75,6 +93,9 @@ export function HomeSidebar({
       }
     } catch {
       router.refresh();
+    } finally {
+      setDeleting(false);
+      setDeleteTarget(null);
     }
   }
 
@@ -182,6 +203,36 @@ export function HomeSidebar({
           </button>
         </div>
       </aside>
+
+      <AlertDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open && !deleting) {
+            setDeleteTarget(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>删除视频归档</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定要删除「{deleteTarget ? getArchiveTitle(deleteTarget) : ""}」吗？删除后无法恢复。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>取消</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(event) => {
+                event.preventDefault();
+                confirmDelete();
+              }}
+              disabled={deleting}
+            >
+              {deleting ? "删除中…" : "删除"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
