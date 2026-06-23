@@ -74,7 +74,7 @@ export function HomeUrlInput() {
             value={url}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            placeholder="粘贴视频链接，支持 B 站、抖音、YouTube 等"
+            placeholder="粘贴 B 站、优酷、芒果 TV 或视频直链"
             rows={1}
             disabled={loading}
             className="home-input-field"
@@ -95,7 +95,7 @@ export function HomeUrlInput() {
       </form>
       {error ? <p className="home-input-error">{error}</p> : null}
       <p className="home-input-hint">
-        资源紧张，目前仅支持解读 10 分钟以内的视频
+        目前支持 B 站、优酷、芒果 TV 和视频直链，限 10 分钟以内
       </p>
     </div>
   );

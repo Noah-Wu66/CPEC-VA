@@ -1,9 +1,14 @@
 import { resolveBailianProviderConfig } from "@/lib/ai/modelRoutes";
+import { assertPublicHttpUrl } from "@/lib/video-brief/extractors";
 import type { ExtractedVideoSource, VideoBriefAnalysis } from "@/types/video-brief";
 
 export const VIDEO_BRIEF_MODEL = "qwen3.5-omni-flash";
 
 const DOWNLOAD_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36";
+const HLS_URL_RE = /\.m3u8(?:$|[?#])/i;
+const HLS_MIME_TYPES = new Set(["application/x-mpegurl", "application/vnd.apple.mpegurl"]);
+const MAX_HLS_SEGMENTS = 800;
+const HLS_FETCH_BATCH_SIZE = 6;
 
 class VideoBriefAnalysisError extends Error {
   status: number;
@@ -12,6 +17,11 @@ class VideoBriefAnalysisError extends Error {
     super(message);
     this.status = status;
   }
+}
+
+interface DownloadedVideoFile {
+  blob: Blob;
+  filename: string;
 }
 
 function getChoiceText(payload: any) {
@@ -118,25 +128,205 @@ function buildPrompt(source: ExtractedVideoSource) {
   ].join("\n");
 }
 
-// 把视频原文件下载到内存。B 站等有防盗链的平台需要带上来源页 Referer。
-async function downloadVideo(source: ExtractedVideoSource, signal?: AbortSignal) {
+function getDownloadHeaders(source: ExtractedVideoSource) {
   const headers: Record<string, string> = {
     "User-Agent": DOWNLOAD_USER_AGENT,
   };
   if (source.mediaReferer) {
     headers["Referer"] = source.mediaReferer;
   }
+  return headers;
+}
+
+function isHlsUrl(url: string) {
+  try {
+    const parsed = new URL(url);
+    return HLS_URL_RE.test(`${parsed.pathname}${parsed.search}`);
+  } catch {
+    return false;
+  }
+}
+
+function isHlsMimeType(value: string) {
+  return HLS_MIME_TYPES.has(value.trim().toLowerCase().split(";")[0]);
+}
+
+function getVideoExtension(url: string) {
+  try {
+    const match = new URL(url).pathname.match(/\.(mp4|flv|mov|webm|ts)$/i);
+    return match?.[1]?.toLowerCase() || "mp4";
+  } catch {
+    return "mp4";
+  }
+}
+
+function parseHlsAttributes(value: string) {
+  const attrs: Record<string, string> = {};
+  const pattern = /([A-Z0-9-]+)=("[^"]*"|[^,]*)/gi;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(value))) {
+    attrs[match[1].toUpperCase()] = match[2].replace(/^"|"$/g, "");
+  }
+  return attrs;
+}
+
+function resolveMediaUrl(value: string, baseUrl: string) {
+  return assertPublicHttpUrl(new URL(value, baseUrl).toString()).toString();
+}
+
+function parseHlsPlaylist(text: string, playlistUrl: string) {
+  const lines = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  const variants: Array<{ url: string; bandwidth: number }> = [];
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (!line.startsWith("#EXT-X-STREAM-INF")) continue;
+
+    const attrs = parseHlsAttributes(line.slice(line.indexOf(":") + 1));
+    const nextUri = lines.slice(index + 1).find((item) => !item.startsWith("#"));
+    if (!nextUri) continue;
+
+    variants.push({
+      url: resolveMediaUrl(nextUri, playlistUrl),
+      bandwidth: Number(attrs.BANDWIDTH) || Number.MAX_SAFE_INTEGER,
+    });
+  }
+
+  if (variants.length > 0) {
+    variants.sort((left, right) => left.bandwidth - right.bandwidth);
+    return { variantUrl: variants[0].url, segments: [], initUrl: "" };
+  }
+
+  let initUrl = "";
+  const segments: string[] = [];
+  for (const line of lines) {
+    if (line.startsWith("#EXT-X-KEY")) {
+      const attrs = parseHlsAttributes(line.slice(line.indexOf(":") + 1));
+      const method = attrs.METHOD?.toUpperCase();
+      if (method && method !== "NONE") {
+        throw new VideoBriefAnalysisError("该视频流已加密，暂时无法解读", 422);
+      }
+      continue;
+    }
+
+    if (line.startsWith("#EXT-X-MAP")) {
+      const attrs = parseHlsAttributes(line.slice(line.indexOf(":") + 1));
+      if (attrs.URI) {
+        initUrl = resolveMediaUrl(attrs.URI, playlistUrl);
+      }
+      continue;
+    }
+
+    if (!line.startsWith("#")) {
+      segments.push(resolveMediaUrl(line, playlistUrl));
+    }
+  }
+
+  return { variantUrl: "", segments, initUrl };
+}
+
+async function fetchBytes(url: string, headers: Record<string, string>, signal?: AbortSignal) {
+  const response = await fetch(url, { headers, signal });
+  if (!response.ok) {
+    throw new VideoBriefAnalysisError(`视频片段下载失败（${response.status}）`, 502);
+  }
+  return new Uint8Array(await response.arrayBuffer());
+}
+
+function toArrayBuffer(bytes: Uint8Array) {
+  const buffer = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(buffer).set(bytes);
+  return buffer;
+}
+
+async function fetchText(url: string, headers: Record<string, string>, signal?: AbortSignal) {
+  const response = await fetch(url, { headers, signal });
+  if (!response.ok) {
+    throw new VideoBriefAnalysisError(`视频流读取失败（${response.status}）`, 502);
+  }
+  return {
+    text: await response.text(),
+    url: response.url || url,
+  };
+}
+
+async function downloadHlsVideo(
+  initialText: string,
+  initialUrl: string,
+  headers: Record<string, string>,
+  signal?: AbortSignal,
+): Promise<DownloadedVideoFile> {
+  let playlistText = initialText;
+  let playlistUrl = initialUrl;
+
+  for (let depth = 0; depth < 4; depth += 1) {
+    const playlist = parseHlsPlaylist(playlistText, playlistUrl);
+    if (playlist.variantUrl) {
+      const next = await fetchText(playlist.variantUrl, headers, signal);
+      playlistText = next.text;
+      playlistUrl = next.url;
+      continue;
+    }
+
+    if (playlist.segments.length === 0) {
+      throw new VideoBriefAnalysisError("视频流里没有可下载的视频片段", 422);
+    }
+    if (playlist.segments.length > MAX_HLS_SEGMENTS) {
+      throw new VideoBriefAnalysisError("视频片段过多，请换一个更短的视频", 400);
+    }
+
+    const parts: Uint8Array[] = [];
+    if (playlist.initUrl) {
+      parts.push(await fetchBytes(playlist.initUrl, headers, signal));
+    }
+
+    for (let index = 0; index < playlist.segments.length; index += HLS_FETCH_BATCH_SIZE) {
+      const batch = playlist.segments.slice(index, index + HLS_FETCH_BATCH_SIZE);
+      const batchParts = await Promise.all(batch.map((url) => fetchBytes(url, headers, signal)));
+      parts.push(...batchParts);
+    }
+
+    const extension = playlist.initUrl ? "mp4" : "ts";
+    const blob = new Blob(parts.map(toArrayBuffer), { type: playlist.initUrl ? "video/mp4" : "video/mp2t" });
+    if (blob.size === 0) {
+      throw new VideoBriefAnalysisError("视频内容为空", 502);
+    }
+
+    return {
+      blob,
+      filename: `video-${Date.now()}.${extension}`,
+    };
+  }
+
+  throw new VideoBriefAnalysisError("视频流层级过深，暂时无法解读", 422);
+}
+
+// 把视频原文件下载到内存。B 站等有防盗链的平台需要带上来源页 Referer。
+async function downloadVideo(source: ExtractedVideoSource, signal?: AbortSignal): Promise<DownloadedVideoFile> {
+  const headers = getDownloadHeaders(source);
 
   const response = await fetch(source.videoUrl, { headers, signal });
   if (!response.ok) {
     throw new VideoBriefAnalysisError(`视频下载失败（${response.status}）`, 502);
   }
 
+  const responseUrl = response.url || source.videoUrl;
+  const contentType = response.headers.get("content-type") || "";
+  if (isHlsUrl(responseUrl) || isHlsMimeType(contentType)) {
+    return downloadHlsVideo(await response.text(), responseUrl, headers, signal);
+  }
+
   const blob = await response.blob();
   if (blob.size === 0) {
     throw new VideoBriefAnalysisError("视频内容为空", 502);
   }
-  return blob;
+  return {
+    blob,
+    filename: `video-${Date.now()}.${getVideoExtension(responseUrl)}`,
+  };
 }
 
 interface BailianUploadPolicy {
@@ -192,9 +382,8 @@ async function fetchBailianUploadPolicy(
 }
 
 // 把视频上传到百炼临时存储，返回阿里云内网地址 oss://...，模型从内网读取，彻底绕开 60 秒下载超时。
-async function uploadVideoToBailian(policy: BailianUploadPolicy, blob: Blob, signal?: AbortSignal) {
-  const filename = `video-${Date.now()}.mp4`;
-  const key = `${policy.upload_dir}/${filename}`;
+async function uploadVideoToBailian(policy: BailianUploadPolicy, file: DownloadedVideoFile, signal?: AbortSignal) {
+  const key = `${policy.upload_dir}/${file.filename}`;
 
   const form = new FormData();
   form.append("OSSAccessKeyId", policy.oss_access_key_id);
@@ -204,7 +393,7 @@ async function uploadVideoToBailian(policy: BailianUploadPolicy, blob: Blob, sig
   form.append("x-oss-object-acl", policy.x_oss_object_acl);
   form.append("x-oss-forbid-overwrite", policy.x_oss_forbid_overwrite);
   form.append("success_action_status", "200");
-  form.append("file", blob, filename);
+  form.append("file", file.blob, file.filename);
 
   const response = await fetch(policy.upload_host, { method: "POST", body: form, signal });
   if (!response.ok) {
@@ -222,9 +411,9 @@ export async function analyzeVideo(source: ExtractedVideoSource, signal?: AbortS
   const { apiKey, openAIBaseUrl, dashScopeBaseUrl } = resolveBailianProviderConfig();
 
   // 先把视频下载下来，再上传到百炼临时存储，避免百炼跨境下载公网视频时 60 秒超时。
-  const blob = await downloadVideo(source, signal);
+  const file = await downloadVideo(source, signal);
   const policy = await fetchBailianUploadPolicy(apiKey, dashScopeBaseUrl, VIDEO_BRIEF_MODEL, signal);
-  const ossUrl = await uploadVideoToBailian(policy, blob, signal);
+  const ossUrl = await uploadVideoToBailian(policy, file, signal);
 
   const response = await fetch(`${openAIBaseUrl}/chat/completions`, {
     method: "POST",

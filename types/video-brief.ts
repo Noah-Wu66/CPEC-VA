@@ -54,8 +54,8 @@ export interface ExtractedVideoSource {
   author: string;
   coverUrl: string;
   durationSeconds: number;
-  // 真实可下载的视频地址：B 站是 CDN 直链，其它平台是原始视频地址
+  // 真实可下载的视频地址：可能是单个视频文件，也可能是 m3u8 视频流
   videoUrl: string;
-  // 下载视频时需要携带的 Referer（B 站防盗链需要，其它平台可为空）
+  // 下载视频时需要携带的 Referer（部分平台防盗链需要，其它平台可为空）
   mediaReferer?: string;
 }
