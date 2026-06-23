@@ -7,17 +7,42 @@ interface BrandMarkProps {
 export function BrandMark({ className }: BrandMarkProps) {
   return (
     <div
-      className={cn("brand-mark h-8 w-8 rounded-[8px]", className)}
+      className={cn("flex items-center justify-center", className)}
       role="img"
-      aria-label="Video Analyzer"
+      aria-label="视频速览"
     >
-      <svg viewBox="0 0 512 512" aria-hidden="true" focusable="false" className="h-3/4 w-3/4">
-        <g fill="currentColor">
-          <rect x="120" y="216" width="40" height="80" rx="10" />
-          <rect x="180" y="176" width="40" height="160" rx="10" />
-          <rect x="240" y="136" width="40" height="240" rx="10" />
-        </g>
-        <path d="M330 176L406 256L330 336Z" fill="currentColor" />
+      <svg
+        viewBox="0 0 40 40"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-full w-full"
+      >
+        {/* 外圆环 */}
+        <circle
+          cx="20"
+          cy="20"
+          r="18"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          fill="none"
+          opacity="0.9"
+        />
+        {/* 内圆环 */}
+        <circle
+          cx="20"
+          cy="20"
+          r="12"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          fill="none"
+          opacity="0.3"
+        />
+        {/* 播放三角形 */}
+        <path
+          d="M16 14L26 20L16 26Z"
+          fill="currentColor"
+          opacity="0.9"
+        />
       </svg>
     </div>
   );

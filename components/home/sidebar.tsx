@@ -13,6 +13,7 @@ import {
   Sun,
   Trash2,
 } from "lucide-react";
+import { BrandMark } from "@/components/brand/brand-logo";
 import { useAppTheme, type ThemeMode } from "@/components/layout/app-theme-provider";
 import { formatRelativeTime } from "@/lib/client/date";
 import { readJson } from "@/lib/client/api";
@@ -93,90 +94,94 @@ export function HomeSidebar({
       ) : null}
       <aside className={`home-sidebar ${mobileOpen ? "open" : ""}`}>
         <div className="home-sidebar-header">
+          <div className="home-brand">
+            <BrandMark className="h-7 w-7 text-[var(--va-fg)]" />
+            <span className="home-brand-name">视频速览</span>
+          </div>
           <Link
             href="/"
             className="home-new-chat"
             title="新建视频速览"
             onClick={() => setMobileOpen(false)}
           >
-            <MessageSquarePlus className="h-5 w-5" />
+            <MessageSquarePlus className="h-4 w-4" />
             <span>新建速览</span>
           </Link>
         </div>
 
-      <div className="home-sidebar-body">
-        <div className="home-sidebar-section">
-          <p className="home-sidebar-section-title">最近速览</p>
-          <div className="home-sidebar-list">
-            {archives.length === 0 ? (
-              <div className="home-sidebar-empty">
-                <Clapperboard className="h-4 w-4" />
-                <span>还没有视频速览</span>
-              </div>
-            ) : (
-              archives.map((archive) => {
-                const selected = archive.id === activeArchiveId;
-                return (
-                  <div
-                    key={archive.id}
-                    className={`home-sidebar-item ${selected ? "active" : ""}`}
-                  >
-                    <Link
-                      href={`/v/${archive.id}`}
-                      className="home-sidebar-item-link"
-                      title={getArchiveTitle(archive)}
-                      onClick={() => setMobileOpen(false)}
+        <div className="home-sidebar-body">
+          <div className="home-sidebar-section">
+            <p className="home-sidebar-section-title">最近速览</p>
+            <div className="home-sidebar-list">
+              {archives.length === 0 ? (
+                <div className="home-sidebar-empty">
+                  <Clapperboard className="h-4 w-4" />
+                  <span>还没有视频速览</span>
+                </div>
+              ) : (
+                archives.map((archive) => {
+                  const selected = archive.id === activeArchiveId;
+                  return (
+                    <div
+                      key={archive.id}
+                      className={`home-sidebar-item ${selected ? "active" : ""}`}
                     >
-                      <span className="home-sidebar-item-title">
-                        {getArchiveTitle(archive)}
-                      </span>
-                      <span className="home-sidebar-item-meta">
-                        {archive.platform} · {formatRelativeTime(archive.createdAt)}
-                      </span>
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={(event) => handleDelete(archive, event)}
-                      className="home-sidebar-item-delete"
-                      aria-label="删除归档"
-                      title="删除归档"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                );
-              })
-            )}
+                      <Link
+                        href={`/v/${archive.id}`}
+                        className="home-sidebar-item-link"
+                        title={getArchiveTitle(archive)}
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        <span className="home-sidebar-item-title">
+                          {getArchiveTitle(archive)}
+                        </span>
+                        <span className="home-sidebar-item-meta">
+                          {archive.platform} · {formatRelativeTime(archive.createdAt)}
+                        </span>
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={(event) => handleDelete(archive, event)}
+                        className="home-sidebar-item-delete"
+                        aria-label="删除归档"
+                        title="删除归档"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="home-sidebar-footer">
-        <button
-          type="button"
-          onClick={() => {
-            cycleTheme();
-          }}
-          className="home-sidebar-footer-btn"
-          aria-label="切换主题"
-          title="切换主题"
-        >
-          {themeIcon}
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setMobileOpen(false);
-            handleLogout();
-          }}
-          className="home-sidebar-footer-btn"
-          aria-label="退出登录"
-          title="退出登录"
-        >
-          <LogOut className="h-[18px] w-[18px]" />
-        </button>
-      </div>
-    </aside>
+        <div className="home-sidebar-footer">
+          <button
+            type="button"
+            onClick={() => {
+              cycleTheme();
+            }}
+            className="home-sidebar-footer-btn"
+            aria-label="切换主题"
+            title="切换主题"
+          >
+            {themeIcon}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMobileOpen(false);
+              handleLogout();
+            }}
+            className="home-sidebar-footer-btn"
+            aria-label="退出登录"
+            title="退出登录"
+          >
+            <LogOut className="h-[18px] w-[18px]" />
+          </button>
+        </div>
+      </aside>
     </>
   );
 }

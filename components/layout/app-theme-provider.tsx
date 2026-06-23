@@ -22,13 +22,13 @@ function resolveSystemTheme(): ResolvedTheme {
 
 function getInitialThemeMode(): ThemeMode {
   if (typeof document === "undefined") return "system";
-  const themeMode = document.documentElement.dataset.oaThemeMode;
+  const themeMode = document.documentElement.dataset.theme;
   return THEME_MODES.includes(themeMode as ThemeMode) ? (themeMode as ThemeMode) : "system";
 }
 
 function getInitialResolvedTheme(): ResolvedTheme {
   if (typeof document === "undefined") return "light";
-  return document.documentElement.dataset.oaTheme === "dark" ? "dark" : "light";
+  return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
 }
 
 export function useAppTheme() {
@@ -67,12 +67,9 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const root = document.documentElement;
-    root.dataset.oaTheme = resolvedTheme;
-    root.dataset.oaThemeMode = themeMode;
+    root.dataset.theme = resolvedTheme;
     root.style.colorScheme = resolvedTheme;
     root.classList.toggle("dark", resolvedTheme === "dark");
-    root.classList.toggle("dark-mode", resolvedTheme === "dark");
-    document.body.classList.toggle("dark-mode", resolvedTheme === "dark");
   }, [resolvedTheme, themeMode]);
 
   const setThemeMode = useCallback((nextThemeMode: ThemeMode) => {

@@ -29,11 +29,9 @@ const themeInitScript = `
     const resolvedTheme = themeMode === 'system'
       ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
       : themeMode;
-    document.documentElement.dataset.oaTheme = resolvedTheme;
-    document.documentElement.dataset.oaThemeMode = themeMode;
+    document.documentElement.dataset.theme = resolvedTheme;
     document.documentElement.style.colorScheme = resolvedTheme;
     document.documentElement.classList.toggle('dark', resolvedTheme === 'dark');
-    document.documentElement.classList.toggle('dark-mode', resolvedTheme === 'dark');
   })();
 `;
 
@@ -45,8 +43,8 @@ const bodyFont = Noto_Sans_SC({
 });
 
 export const metadata: Metadata = {
-  title: "Video Analyzer",
-  description: "粘贴视频链接，AI 自动生成解读与标签"
+  title: "视频速览",
+  description: "粘贴视频链接，AI 自动解读"
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

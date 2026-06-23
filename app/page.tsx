@@ -30,7 +30,8 @@ export default async function HomePage() {
       archives={archives}
     >
       <div className="home-welcome">
-        <h1 className="home-welcome-title">准备好了，随时开始</h1>
+        <h1 className="home-welcome-title">粘贴视频链接，AI 自动解读</h1>
+        <p className="home-welcome-subtitle">支持 B 站、抖音、YouTube 等平台</p>
         <HomeUrlInput />
       </div>
     </ChatShell>

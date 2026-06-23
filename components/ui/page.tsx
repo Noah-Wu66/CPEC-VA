@@ -21,7 +21,7 @@ interface MetricCardProps {
 
 export function MetricCard({ label, value, description, icon, tone = "blue", className }: MetricCardProps) {
   return (
-    <div className={cn("group rounded-[12px] border border-[var(--va-border)] bg-[var(--va-card)] p-4 shadow-[var(--va-shadow-sm)] transition-colors hover:border-[var(--va-muted-soft)]", className)}>
+    <div className={cn("group rounded-[var(--radius-lg)] border border-[var(--va-border)] bg-[var(--va-card)] p-5 shadow-[var(--va-shadow-sm)] transition-colors hover:border-[var(--va-accent-border)]", className)}>
       <div className="flex items-start gap-3">
         {icon ? (
           <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] border", toneClass[tone])}>

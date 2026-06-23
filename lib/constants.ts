@@ -1,5 +1,5 @@
-export const APP_NAME = "Video Analyzer";
-export const APP_TAGLINE = "粘贴视频链接，AI 自动生成解读与标签";
+export const APP_NAME = "视频速览";
+export const APP_TAGLINE = "粘贴视频链接，AI 自动解读";
 
 export const SESSION_COOKIE_NAME = "va_session";
 export const SESSION_ROLE_COOKIE_NAME = "va_role";

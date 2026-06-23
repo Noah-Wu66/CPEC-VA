@@ -66,16 +66,16 @@ export function AuthForm({ returnTo, initialMode }: AuthFormProps) {
   return (
     <div className="auth-card">
       <div className="auth-brand text-center">
-        <BrandMark className="mx-auto mb-4 h-12 w-12 rounded-[12px]" />
-        <h1 className="auth-title text-[24px]">{APP_NAME}</h1>
+        <BrandMark className="mx-auto mb-4 h-10 w-10 text-[var(--va-fg)]" />
+        <h1 className="auth-title">{APP_NAME}</h1>
         <p className="mt-2 text-sm font-medium text-[var(--va-muted)]">{APP_TAGLINE}</p>
       </div>
 
-      <div className="mb-5 grid grid-cols-2 gap-1 rounded-[var(--radius-md)] border border-[var(--va-border)] bg-[var(--va-hover)] p-1">
+      <div className="mb-6 grid grid-cols-2 gap-1 rounded-[var(--radius-md)] border border-[var(--va-border)] bg-[var(--va-hover)] p-1">
         <button
           type="button"
           onClick={() => switchMode("login")}
-          className={`rounded-[var(--radius-sm)] px-3 py-2 text-sm font-semibold transition-all ${
+          className={`rounded-[var(--radius-sm)] px-3 py-2.5 text-sm font-semibold transition-all ${
             !isRegister
               ? "bg-[var(--va-card)] text-[var(--va-fg)] shadow-[var(--va-shadow-sm)]"
               : "text-[var(--va-muted)] hover:text-[var(--va-fg)]"
@@ -86,7 +86,7 @@ export function AuthForm({ returnTo, initialMode }: AuthFormProps) {
         <button
           type="button"
           onClick={() => switchMode("register")}
-          className={`rounded-[var(--radius-sm)] px-3 py-2 text-sm font-semibold transition-all ${
+          className={`rounded-[var(--radius-sm)] px-3 py-2.5 text-sm font-semibold transition-all ${
             isRegister
               ? "bg-[var(--va-card)] text-[var(--va-fg)] shadow-[var(--va-shadow-sm)]"
               : "text-[var(--va-muted)] hover:text-[var(--va-fg)]"
@@ -96,7 +96,7 @@ export function AuthForm({ returnTo, initialMode }: AuthFormProps) {
         </button>
       </div>
 
-      <form className="grid gap-4" onSubmit={handleSubmit}>
+      <form className="grid gap-5" onSubmit={handleSubmit}>
         {isRegister && (
           <div className="grid gap-2">
             <Label htmlFor="displayName">昵称</Label>
@@ -147,18 +147,18 @@ export function AuthForm({ returnTo, initialMode }: AuthFormProps) {
         </Button>
       </form>
 
-      <p className="mt-5 text-center text-xs text-[var(--va-muted)]">
+      <p className="mt-6 text-center text-xs text-[var(--va-muted)]">
         {isRegister ? (
           <>
             已有账号？
-            <button type="button" className="ml-1 font-semibold text-[var(--va-accent)] hover:underline" onClick={() => switchMode("login")}>
+            <button type="button" className="ml-1 font-semibold text-[var(--va-fg)] hover:underline" onClick={() => switchMode("login")}>
               去登录
             </button>
           </>
         ) : (
           <>
             还没有账号？
-            <button type="button" className="ml-1 font-semibold text-[var(--va-accent)] hover:underline" onClick={() => switchMode("register")}>
+            <button type="button" className="ml-1 font-semibold text-[var(--va-fg)] hover:underline" onClick={() => switchMode("register")}>
               立即注册
             </button>
           </>
