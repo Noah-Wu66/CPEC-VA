@@ -407,11 +407,10 @@ async function uploadVideoToBailian(policy: BailianUploadPolicy, file: Downloade
   return `oss://${key}`;
 }
 
-export async function analyzeVideo(source: ExtractedVideoSource, signal?: AbortSignal) {
+// 共用的"上传百炼 → 调 AI → 解析"流程。无论是从网址下载还是用户直传，拿到视频 Blob 后都走这里。
+async function runBailianAnalysis(file: DownloadedVideoFile, source: ExtractedVideoSource, signal?: AbortSignal) {
   const { apiKey, openAIBaseUrl, dashScopeBaseUrl } = resolveBailianProviderConfig();
 
-  // 先把视频下载下来，再上传到百炼临时存储，避免百炼跨境下载公网视频时 60 秒超时。
-  const file = await downloadVideo(source, signal);
   const policy = await fetchBailianUploadPolicy(apiKey, dashScopeBaseUrl, VIDEO_BRIEF_MODEL, signal);
   const ossUrl = await uploadVideoToBailian(policy, file, signal);
 
@@ -473,4 +472,31 @@ export async function analyzeVideo(source: ExtractedVideoSource, signal?: AbortS
   }
 
   return normalizeAnalysis(parseJsonObject(outputText));
+}
+
+export async function analyzeVideo(source: ExtractedVideoSource, signal?: AbortSignal) {
+  // 先把视频下载下来，再上传到百炼临时存储，避免百炼跨境下载公网视频时 60 秒超时。
+  const file = await downloadVideo(source, signal);
+  return runBailianAnalysis(file, source, signal);
+}
+
+// 处理用户直接上传的本地视频文件，跳过下载步骤，直接进入"上传百炼 → 调 AI"流程。
+export async function analyzeVideoFromBlob(
+  blob: Blob,
+  filename: string,
+  sourceMeta: { platform: string; title: string; author?: string },
+  signal?: AbortSignal,
+) {
+  const file: DownloadedVideoFile = { blob, filename };
+  const source: ExtractedVideoSource = {
+    sourceUrl: `local://${filename}`,
+    canonicalUrl: `local://${filename}`,
+    platform: sourceMeta.platform,
+    title: sourceMeta.title,
+    author: sourceMeta.author || "",
+    coverUrl: "",
+    durationSeconds: 0,
+    videoUrl: "",
+  };
+  return runBailianAnalysis(file, source, signal);
 }
