@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -47,6 +47,12 @@ export function HomeSidebar({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<SerializedVideoBriefArchive | null>(null);
   const [deleting, setDeleting] = useState(false);
+  // 相对时间依赖当前时间和本地时区，只能在浏览器端算，否则服务端/客户端渲染不一致会触发水合错误
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const themeItems = useMemo<ThemeMode[]>(() => ["light", "dark", "system"], []);
 
@@ -157,7 +163,9 @@ export function HomeSidebar({
                           {getArchiveTitle(archive)}
                         </span>
                         <span className="home-sidebar-item-meta">
-                          {archive.platform} · {formatRelativeTime(archive.createdAt)}
+                          {mounted
+                            ? `${archive.platform} · ${formatRelativeTime(archive.createdAt)}`
+                            : archive.platform}
                         </span>
                       </Link>
                       <button
