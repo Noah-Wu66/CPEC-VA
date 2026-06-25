@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { APP_NAME } from "@/lib/constants";
 
 interface BrandMarkProps {
   className?: string;
@@ -9,7 +10,7 @@ export function BrandMark({ className }: BrandMarkProps) {
     <div
       className={cn("flex items-center justify-center", className)}
       role="img"
-      aria-label="视频速览"
+      aria-label={APP_NAME}
     >
       <svg
         viewBox="0 0 40 40"

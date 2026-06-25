@@ -14,6 +14,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { BrandMark } from "@/components/brand/brand-logo";
+import { APP_NAME } from "@/lib/constants";
 import { useAppTheme, type ThemeMode } from "@/components/layout/app-theme-provider";
 import {
   AlertDialog,
@@ -123,7 +124,7 @@ export function HomeSidebar({
         <div className="home-sidebar-header">
           <div className="home-brand">
             <BrandMark className="h-7 w-7 text-[var(--va-fg)]" />
-            <span className="home-brand-name">视频速览</span>
+            <span className="home-brand-name">{APP_NAME}</span>
           </div>
           <Link
             href="/"

@@ -43,7 +43,7 @@ const bodyFont = Noto_Sans_SC({
 });
 
 export const metadata: Metadata = {
-  title: "视频速览",
+  title: "跨模态标签自动生成系统",
   description: "粘贴视频链接，AI 自动解读"
 };
 

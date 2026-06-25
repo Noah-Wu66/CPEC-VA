@@ -1,4 +1,4 @@
-export const APP_NAME = "视频速览";
+export const APP_NAME = "跨模态标签自动生成系统";
 export const APP_TAGLINE = "粘贴视频链接，AI 自动解读";
 
 export const SESSION_COOKIE_NAME = "va_session";
